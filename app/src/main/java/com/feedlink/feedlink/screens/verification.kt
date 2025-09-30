@@ -9,6 +9,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -20,8 +22,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.getViewModel
 import com.feedlink.feedlink.R
+import com.feedlink.feedlink.ui.theme.Green
 import com.feedlink.feedlink.viewmodel.ForgotPasswordViewModel
 import kotlinx.coroutines.delay
 
@@ -31,12 +34,15 @@ fun VerificationCodeScreen(
     onVerificationSuccess: (String) -> Unit = {},
     onResendClick: () -> Unit = {}
 ) {
-    val viewModel: ForgotPasswordViewModel = viewModel()
+    val viewModel: ForgotPasswordViewModel = getViewModel()
+
     var pinDigits by remember { mutableStateOf(List(4) { "" }) }
     val isLoading by viewModel.isLoading
     val errorMessage by viewModel.errorMessage
 
     var timeLeft by remember { mutableStateOf(180) }
+
+    val focusRequesters = remember { List(4) { FocusRequester() } }
 
     LaunchedEffect(Unit) {
         while (timeLeft > 0) {
@@ -80,7 +86,7 @@ fun VerificationCodeScreen(
 
             Text(
                 text = "Enter Verification Code",
-                color = Color(0xFF197116),
+                color = Green,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
                 textAlign = TextAlign.Center
@@ -97,11 +103,18 @@ fun VerificationCodeScreen(
                         value = digit,
                         onValueChange = { newValue ->
                             if (newValue.length <= 1 && newValue.all { it.isDigit() }) {
-                                pinDigits = pinDigits.toMutableList().apply {
-                                    set(index, newValue)
+                                val newDigits = pinDigits.toMutableList()
+                                newDigits[index] = newValue
+                                pinDigits = newDigits
+
+                                if (newValue.isNotEmpty() && index < 3) {
+                                    focusRequesters[index + 1].requestFocus()
                                 }
+                            } else if (newValue.isEmpty() && index > 0) {
+                                focusRequesters[index - 1].requestFocus()
                             }
-                        }
+                        },
+                        focusRequester = focusRequesters[index]
                     )
                 }
             }
@@ -114,7 +127,7 @@ fun VerificationCodeScreen(
 
             Text(
                 text = formattedTime,
-                color = Color(0xFF197116),
+                color = Green,
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center
             )
@@ -145,10 +158,10 @@ fun VerificationCodeScreen(
                 }
             }
 
-            if (!errorMessage.isNullOrBlank()) {
+            errorMessage?.takeIf { it.isNotBlank() }?.let { errorMsg ->
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = errorMessage!!,
+                    text = errorMsg,
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 14.sp
                 )
@@ -175,7 +188,7 @@ fun VerificationCodeScreen(
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = Green,
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(20.dp)
                     )
@@ -195,14 +208,16 @@ fun VerificationCodeScreen(
 @Composable
 fun VerificationCodeBox(
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    focusRequester: FocusRequester
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = Modifier
             .width(54.dp)
-            .height(54.dp),
+            .height(54.dp)
+            .focusRequester(focusRequester),
         textStyle = TextStyle(
             fontSize = 22.sp,
             textAlign = TextAlign.Center,
@@ -211,7 +226,7 @@ fun VerificationCodeBox(
         singleLine = true,
         shape = RoundedCornerShape(4.dp),
         colors = OutlinedTextFieldDefaults.colors(
-            cursorColor = Color(0xFF197116),
+            cursorColor = Green,
             focusedBorderColor = Color.Black,
             unfocusedBorderColor = Color.Black
         ),

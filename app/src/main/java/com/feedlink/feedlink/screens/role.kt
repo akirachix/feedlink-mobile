@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feedlink.feedlink.R
+import com.feedlink.feedlink.ui.theme.Orange
 
 
 @Composable
@@ -55,7 +56,7 @@ fun WelcomeRoleScreen(
                     .fillMaxWidth(0.6f)
                     .height(52.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFF9800),
+                    containerColor = Orange,
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(5.dp)
@@ -74,7 +75,7 @@ fun WelcomeRoleScreen(
                 shape = RoundedCornerShape(5.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.Transparent,
-                    contentColor = Color(0xFFFF9800)
+                    contentColor = Orange
                 )
             ) {
                 Text(text = "Recycler", fontWeight = FontWeight.Bold, fontSize = 18.sp)

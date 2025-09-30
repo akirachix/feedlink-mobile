@@ -21,7 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feedlink.feedlink.R
-
+import com.feedlink.feedlink.ui.theme.Green
 
 
 @Composable
@@ -57,7 +57,7 @@ fun AuthChoiceScreen(
                     .fillMaxWidth(0.6f)
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF045611),
+                    containerColor = Green,
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(8.dp)
@@ -81,7 +81,7 @@ fun AuthChoiceScreen(
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.Transparent,
-                    contentColor = Color(0xFF045611)
+                    contentColor = Green
                 )
             ) {
                 Text(
@@ -89,7 +89,7 @@ fun AuthChoiceScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
-                    color = Color(0xFF045611)
+                    color = Green
                 )
             }
         }

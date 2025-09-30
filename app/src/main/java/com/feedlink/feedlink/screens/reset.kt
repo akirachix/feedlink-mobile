@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,11 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.*
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.koin.androidx.compose.getViewModel
 import com.feedlink.feedlink.R
+import com.feedlink.feedlink.ui.theme.Green
+import com.feedlink.feedlink.ui.theme.Orange
 import com.feedlink.feedlink.viewmodel.ForgotPasswordViewModel
-
 
 @Composable
 fun ResetPasswordScreen(
@@ -34,7 +34,8 @@ fun ResetPasswordScreen(
     otp: String,
     onResetSuccess: () -> Unit = {}
 ) {
-    val viewModel: ForgotPasswordViewModel = viewModel()
+    val viewModel: ForgotPasswordViewModel = getViewModel()
+
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var newPasswordVisible by remember { mutableStateOf(false) }
@@ -82,13 +83,11 @@ fun ResetPasswordScreen(
                 textAlign = TextAlign.Center
             )
 
-
-
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
                 text = "Create New Password:",
-                color = Color(0xFF197116),
+                color = Green,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier
@@ -102,7 +101,7 @@ fun ResetPasswordScreen(
                     Text(
                         "Create new password",
                         fontStyle = FontStyle.Italic,
-                        color = Color(0xFF197116).copy(alpha = 0.7f)
+                        color = Green.copy(alpha = 0.7f)
                     )
                 },
                 singleLine = true,
@@ -120,9 +119,9 @@ fun ResetPasswordScreen(
                     .fillMaxWidth()
                     .heightIn(min = 52.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFF9800),
-                    unfocusedBorderColor = Color(0xFFFF9800),
-                    cursorColor = Color(0xFF197116)
+                    focusedBorderColor = Orange,
+                    unfocusedBorderColor = Orange,
+                    cursorColor = Green
                 )
             )
 
@@ -130,7 +129,7 @@ fun ResetPasswordScreen(
 
             Text(
                 text = "Confirm password:",
-                color = Color(0xFF197116),
+                color = Green,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier
@@ -144,7 +143,7 @@ fun ResetPasswordScreen(
                     Text(
                         "Confirm new password",
                         fontStyle = FontStyle.Italic,
-                        color = Color(0xFF197116).copy(alpha = 0.7f)
+                        color = Green.copy(alpha = 0.7f)
                     )
                 },
                 singleLine = true,
@@ -162,15 +161,16 @@ fun ResetPasswordScreen(
                     .fillMaxWidth()
                     .heightIn(min = 52.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFF9800),
-                    unfocusedBorderColor = Color(0xFFFF9800),
-                    cursorColor = Color(0xFF197116)
+                    focusedBorderColor = Orange,
+                    unfocusedBorderColor = Orange,
+                    cursorColor = Green
+
                 )
             )
 
-            if (!errorMessage.isNullOrBlank()) {
+            errorMessage?.takeIf { it.isNotBlank() }?.let { errorMsg ->
                 Text(
-                    text = errorMessage!!,
+                    text = errorMsg,
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -181,7 +181,6 @@ fun ResetPasswordScreen(
 
             Button(
                 onClick = {
-
                     viewModel.resetPassword(
                         email = email,
                         newPassword = newPassword,
@@ -190,7 +189,7 @@ fun ResetPasswordScreen(
                         onResetSuccess()
                     }
                 },
-                enabled = true,
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
@@ -201,7 +200,7 @@ fun ResetPasswordScreen(
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = Green,
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(20.dp)
                     )
@@ -219,7 +218,6 @@ fun ResetPasswordScreen(
 
             OutlinedButton(
                 onClick = {
-
                     onResetSuccess()
                 },
                 modifier = Modifier
@@ -235,10 +233,9 @@ fun ResetPasswordScreen(
                     text = "Cancel",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color(0xFF045611)
+                    color = Green
                 )
             }
         }
     }
 }
-

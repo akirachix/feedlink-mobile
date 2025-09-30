@@ -6,11 +6,14 @@ import androidx.lifecycle.viewModelScope
 import com.feedlink.feedlink.repository.AuthRepository
 import kotlinx.coroutines.launch
 
-class ForgotPasswordViewModel : ViewModel(){
+class ForgotPasswordViewModel(
+    private val repo: AuthRepository // 👈 Injected by Koin
+) : ViewModel() {
+
     var isLoading = mutableStateOf(false)
     var errorMessage = mutableStateOf<String?>(null)
-    private val repo = AuthRepository()
 
+    // ✅ Rest of your logic stays exactly the same!
     fun sendOtp(email: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading.value = true
@@ -52,6 +55,7 @@ class ForgotPasswordViewModel : ViewModel(){
             isLoading.value = false
         }
     }
+
     private fun parseErrorMessage(error: String?): String {
         if (error.isNullOrEmpty()) return "Something went wrong. Please try again."
         return when {
@@ -68,5 +72,4 @@ class ForgotPasswordViewModel : ViewModel(){
             else -> "Something went wrong. Please try again."
         }
     }
-
 }

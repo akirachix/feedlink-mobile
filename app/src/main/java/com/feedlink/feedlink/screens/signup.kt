@@ -13,8 +13,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,11 +25,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.getViewModel
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.model.SignUpRequest
+import com.feedlink.feedlink.ui.theme.Green
+import com.feedlink.feedlink.ui.theme.Orange
 import com.feedlink.feedlink.viewmodel.SignupViewModel
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
@@ -39,7 +38,8 @@ fun SignUpScreen(
     onSignUpSuccess: () -> Unit = {},
     onSignInClick: () -> Unit = {}
 ) {
-    val viewModel: SignupViewModel = viewModel()
+    val viewModel: SignupViewModel = getViewModel()
+
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -66,7 +66,6 @@ fun SignUpScreen(
         if (signUpSuccessResponse != null) {
             Log.d("SignUpScreen", "Sign up successful (response received), navigating...")
             onSignUpSuccess()
-
         }
     }
 
@@ -114,17 +113,17 @@ fun SignUpScreen(
 
                 Text(
                     text = "Sign Up",
-                    color = Color(0xFFFF9800),
+                    color = Orange,
                     fontWeight = FontWeight.Bold,
                     fontSize = 28.sp,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
-                Text("First Name:", color = Color(0xFF197116), fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
+                Text("First Name:", color = Green, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
                 OutlinedTextField(
                     value = firstName,
                     onValueChange = { firstName = it; if (it.isNotBlank()) isFirstNameError = false },
-                    placeholder = { Text("Enter your first name", fontStyle = FontStyle.Italic, color = Color(0xFF197116).copy(alpha = 0.7f)) },
+                    placeholder = { Text("Enter your first name", fontStyle = FontStyle.Italic, color = Green.copy(alpha = 0.7f)) },
                     singleLine = true,
                     isError = isFirstNameError,
                     modifier = Modifier.fillMaxWidth(),
@@ -140,11 +139,11 @@ fun SignUpScreen(
                 }
                 Spacer(Modifier.height(10.dp))
 
-                Text("Last Name:", color = Color(0xFF197116), fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
+                Text("Last Name:", color = Green, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
                 OutlinedTextField(
                     value = lastName,
                     onValueChange = { lastName = it; if (it.isNotBlank()) isLastNameError = false },
-                    placeholder = { Text("Enter your last name", fontStyle = FontStyle.Italic, color = Color(0xFF197116).copy(alpha = 0.7f)) },
+                    placeholder = { Text("Enter your last name", fontStyle = FontStyle.Italic, color = Green.copy(alpha = 0.7f)) },
                     singleLine = true,
                     isError = isLastNameError,
                     modifier = Modifier.fillMaxWidth(),
@@ -160,7 +159,7 @@ fun SignUpScreen(
                 }
                 Spacer(Modifier.height(10.dp))
 
-                Text("Email:", color = Color(0xFF197116), fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
+                Text("Email:", color = Green, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it; if (it.isNotBlank()) isEmailError = !Patterns.EMAIL_ADDRESS.matcher(it).matches() else isEmailError = false },
@@ -171,7 +170,7 @@ fun SignUpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFF9800),
+                        focusedBorderColor = Orange,
                         unfocusedBorderColor = if (isEmailError) MaterialTheme.colorScheme.error else Color(0xFFFF9800).copy(alpha = 0.7f),
                         cursorColor = Color(0xFF197116)
                     )
@@ -181,11 +180,11 @@ fun SignUpScreen(
                 }
                 Spacer(Modifier.height(10.dp))
 
-                Text("Password:", color = Color(0xFF197116), fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
+                Text("Password:", color = Green, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it; if (it.isNotBlank()) isPasswordError = it.length < 6 else isPasswordError = false },
-                    placeholder = { Text("Enter password", fontStyle = FontStyle.Italic, color = Color(0xFF197116).copy(alpha = 0.7f)) },
+                    placeholder = { Text("Enter password", fontStyle = FontStyle.Italic, color = Green.copy(alpha = 0.7f)) },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -197,7 +196,7 @@ fun SignUpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFF9800),
+                        focusedBorderColor = Orange,
                         unfocusedBorderColor = if (isPasswordError) MaterialTheme.colorScheme.error else Color(0xFFFF9800).copy(alpha = 0.7f),
                         cursorColor = Color(0xFF197116)
                     )
@@ -207,11 +206,11 @@ fun SignUpScreen(
                 }
                 Spacer(Modifier.height(10.dp))
 
-                Text("Confirm Password:", color = Color(0xFF197116), fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
+                Text("Confirm Password:", color = Green, fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp))
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it; if (it.isNotBlank()) isConfirmPasswordError = password != it else isConfirmPasswordError = false },
-                    placeholder = { Text("Re-enter password", fontStyle = FontStyle.Italic, color = Color(0xFF197116).copy(alpha = 0.7f)) },
+                    placeholder = { Text("Re-enter password", fontStyle = FontStyle.Italic, color = Green.copy(alpha = 0.7f)) },
                     singleLine = true,
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -223,7 +222,7 @@ fun SignUpScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFF9800),
+                        focusedBorderColor = Orange,
                         unfocusedBorderColor = if (isConfirmPasswordError) MaterialTheme.colorScheme.error else Color(0xFFFF9800).copy(alpha = 0.7f),
                         cursorColor = Color(0xFF197116)
                     )
@@ -266,10 +265,10 @@ fun SignUpScreen(
                         .height(48.dp),
                     enabled = !isLoading,
                     shape = RoundedCornerShape(6.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF197116))
+                    colors = ButtonDefaults.buttonColors(containerColor = Green)
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                        CircularProgressIndicator(color =Green, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
                     } else {
                         Text("Create account", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
                     }
@@ -285,7 +284,7 @@ fun SignUpScreen(
                     Text("Already have an account? ", color = Color.Black, fontSize = 15.sp)
                     Text(
                         text = "Sign In",
-                        color = Color(0xFFFF9800),
+                        color = Orange,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
                         modifier = Modifier.clickable { if (!isLoading) onSignInClick() }
@@ -296,6 +295,3 @@ fun SignUpScreen(
         }
     }
 }
-
-
-

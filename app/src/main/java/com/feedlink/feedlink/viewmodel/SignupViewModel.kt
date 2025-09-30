@@ -8,25 +8,28 @@ import com.feedlink.feedlink.model.SignUpResponse
 import com.feedlink.feedlink.repository.AuthRepository
 import kotlinx.coroutines.launch
 
-class SignupViewModel : ViewModel(){
+class SignupViewModel(
+    private val repo: AuthRepository // 👈 Injected via constructor
+) : ViewModel() {
+
     var isLoading = mutableStateOf(false)
     var errorMessage = mutableStateOf<String?>(null)
     var SignupSuccess = mutableStateOf<SignUpResponse?>(null)
 
-    private val repo = AuthRepository()
+    // ❌ Removed: private val repo = AuthRepository()
 
-    fun signup(request: SignUpRequest){
-        viewModelScope.launch{
+    fun signup(request: SignUpRequest) {
+        viewModelScope.launch {
             isLoading.value = true
             errorMessage.value = null
             SignupSuccess.value = null
 
             val result = repo.signup(request)
 
-            if(result.isSuccess){
-                val response = result.getOrNull() as SignUpResponse
-                SignupSuccess.value = response
-            }else{
+            if (result.isSuccess) {
+                // ✅ Safe: getOrNull() already returns SignUpResponse? — no cast needed
+                SignupSuccess.value = result.getOrNull()
+            } else {
                 val exception = result.exceptionOrNull()
                 errorMessage.value = parseErrorMessage(exception?.message)
             }
@@ -35,14 +38,13 @@ class SignupViewModel : ViewModel(){
         }
     }
 
-    private fun parseErrorMessage(errorMessage: String?): String{
+    private fun parseErrorMessage(errorMessage: String?): String {
         return when {
-            errorMessage.isNullOrEmpty()->"Signup failed. Please try again."
-            errorMessage.contains("practice_number")->"Invalid practice number"
-            errorMessage.contains("email")->"Email already in use or invalid."
-            errorMessage.contains("<!DOCTYPE html>")->"Something went wrong, try again later."
+            errorMessage.isNullOrEmpty() -> "Signup failed. Please try again."
+            errorMessage.contains("practice_number", ignoreCase = true) -> "Invalid practice number"
+            errorMessage.contains("email", ignoreCase = true) -> "Email already in use or invalid."
+            errorMessage.contains("<!DOCTYPE html>", ignoreCase = true) -> "Something went wrong, try again later."
             else -> errorMessage
-
         }
     }
 }

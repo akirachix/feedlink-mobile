@@ -19,6 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feedlink.feedlink.R
+import com.feedlink.feedlink.ui.theme.Green
 
 @Composable
 fun WelcomeScreen(
@@ -71,7 +72,7 @@ fun WelcomeScreen(
 
             Text(
                 text = "Welcome",
-                color = Color(0xFF197116),
+                color = Green,
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -94,14 +95,14 @@ fun WelcomeScreen(
             ) {
                 Text(
                     text = "Skip",
-                    color = Color(0xFF197116),
+                    color = Green,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable(onClick = onSkipClicked)
                 )
                 Text(
                     text = "Next",
-                    color = Color(0xFF197116),
+                    color = Green,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.clickable(onClick = onNextClicked)

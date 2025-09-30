@@ -75,9 +75,11 @@ dependencies {
     implementation ("androidx.navigation:navigation-compose:2.7.5")
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
     implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-
     implementation("androidx.compose.material:material-icons-extended:<compose_version>")
-
-
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("io.insert-koin:koin-android:3.5.0")
+    implementation("io.insert-koin:koin-androidx-compose:3.5.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.16")
+
+
 }

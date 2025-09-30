@@ -1,7 +1,6 @@
 package com.feedlink.feedlink.repository
 
 import android.util.Log
-import com.feedlink.feedlink.api.ApiClient
 import com.feedlink.feedlink.api.ApiInterface
 import com.feedlink.feedlink.model.ForgotPasswordRequest
 import com.feedlink.feedlink.model.ResetPasswordRequest
@@ -15,9 +14,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 
-class AuthRepository {
-
-    private val apiInterface: ApiInterface = ApiClient.buildApiClient(ApiInterface::class.java)
+class AuthRepository(
+    private val apiInterface: ApiInterface
+) {
 
 
     suspend fun signup(request: SignUpRequest): Result<SignUpResponse> {
