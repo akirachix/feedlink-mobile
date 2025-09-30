@@ -49,6 +49,13 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.tracing.perfetto.handshake)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.runtime)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,10 +75,11 @@ dependencies {
     implementation ("androidx.navigation:navigation-compose:2.7.5")
     implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
     implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-
     implementation("androidx.compose.material:material-icons-extended:<compose_version>")
-
-    implementation("androidx.security:security-crypto:1.1.0-alpha03")
-
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("io.insert-koin:koin-android:3.5.0")
+    implementation("io.insert-koin:koin-androidx-compose:3.5.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.16")
+
+
 }
