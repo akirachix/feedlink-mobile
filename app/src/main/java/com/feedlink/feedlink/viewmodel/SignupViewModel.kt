@@ -9,14 +9,13 @@ import com.feedlink.feedlink.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 class SignupViewModel(
-    private val repo: AuthRepository // 👈 Injected via constructor
+    private val repo: AuthRepository
 ) : ViewModel() {
 
     var isLoading = mutableStateOf(false)
     var errorMessage = mutableStateOf<String?>(null)
     var SignupSuccess = mutableStateOf<SignUpResponse?>(null)
 
-    // ❌ Removed: private val repo = AuthRepository()
 
     fun signup(request: SignUpRequest) {
         viewModelScope.launch {
@@ -27,7 +26,6 @@ class SignupViewModel(
             val result = repo.signup(request)
 
             if (result.isSuccess) {
-                // ✅ Safe: getOrNull() already returns SignUpResponse? — no cast needed
                 SignupSuccess.value = result.getOrNull()
             } else {
                 val exception = result.exceptionOrNull()

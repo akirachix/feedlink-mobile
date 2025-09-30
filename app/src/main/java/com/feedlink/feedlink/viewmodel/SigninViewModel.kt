@@ -8,14 +8,13 @@ import com.feedlink.feedlink.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 class SigninViewModel(
-    private val repo: AuthRepository // 👈 Injected by Koin
+    private val repo: AuthRepository
 ) : ViewModel() {
 
     var isLoading = mutableStateOf(false)
     val errorMessage = mutableStateOf<String?>(null)
     var signInSuccess = mutableStateOf<Boolean?>(null)
 
-    // ❌ Removed: private val repo = AuthRepository()
 
     fun signin(email: String, password: String) {
         viewModelScope.launch {

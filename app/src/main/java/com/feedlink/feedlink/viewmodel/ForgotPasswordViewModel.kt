@@ -7,13 +7,12 @@ import com.feedlink.feedlink.repository.AuthRepository
 import kotlinx.coroutines.launch
 
 class ForgotPasswordViewModel(
-    private val repo: AuthRepository // 👈 Injected by Koin
+    private val repo: AuthRepository
 ) : ViewModel() {
 
     var isLoading = mutableStateOf(false)
     var errorMessage = mutableStateOf<String?>(null)
 
-    // ✅ Rest of your logic stays exactly the same!
     fun sendOtp(email: String, onSuccess: () -> Unit) {
         viewModelScope.launch {
             isLoading.value = true
