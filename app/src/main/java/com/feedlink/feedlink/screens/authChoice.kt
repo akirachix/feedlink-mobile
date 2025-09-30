@@ -27,7 +27,7 @@ import com.feedlink.feedlink.ui.theme.Green
 @Composable
 fun AuthChoiceScreen(
     onSignUpClick: () -> Unit = {},
-    onSignInClick: () -> Unit = {}
+    onSignInClick: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -45,14 +45,15 @@ fun AuthChoiceScreen(
             Image(
                 painter = painterResource(R.drawable.mixed),
                 contentDescription = "FeedLink Logo",
-                modifier = Modifier.size(250.dp)
+                modifier = Modifier
+                    .size(250.dp)
                     .offset(x = 30.dp)
             )
 
             Spacer(modifier = Modifier.height(48.dp))
 
             Button(
-                onClick =  onSignUpClick,
+                onClick = onSignUpClick,
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(56.dp),
@@ -105,6 +106,7 @@ fun AuthChoiceScreen(
         )
     }
 }
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun AuthChoiceScreenPreview() {

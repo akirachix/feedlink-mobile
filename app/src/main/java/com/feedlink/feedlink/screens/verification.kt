@@ -32,7 +32,7 @@ import kotlinx.coroutines.delay
 fun VerificationCodeScreen(
     email: String,
     onVerificationSuccess: (String) -> Unit = {},
-    onResendClick: () -> Unit = {}
+    onResendClick: () -> Unit = {},
 ) {
     val viewModel: ForgotPasswordViewModel = getViewModel()
 
@@ -209,7 +209,7 @@ fun VerificationCodeScreen(
 fun VerificationCodeBox(
     value: String,
     onValueChange: (String) -> Unit,
-    focusRequester: FocusRequester
+    focusRequester: FocusRequester,
 ) {
     OutlinedTextField(
         value = value,

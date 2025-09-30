@@ -26,7 +26,7 @@ import com.feedlink.feedlink.ui.theme.Orange
 @Composable
 fun WelcomeRoleScreen(
     onCustomerClick: () -> Unit = {},
-    onRecyclerClick: () -> Unit = {}
+    onRecyclerClick: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -44,14 +44,15 @@ fun WelcomeRoleScreen(
             Image(
                 painter = painterResource(id = R.drawable.orange),
                 contentDescription = "FeedLink Logo",
-                modifier = Modifier.size(250.dp)
+                modifier = Modifier
+                    .size(250.dp)
                     .offset(x = 30.dp)
             )
 
             Spacer(modifier = Modifier.height(48.dp))
 
             Button(
-                onClick =  onCustomerClick,
+                onClick = onCustomerClick,
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(52.dp),
@@ -81,9 +82,8 @@ fun WelcomeRoleScreen(
                 Text(text = "Recycler", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             }
         }
-            }
-        }
-
+    }
+}
 
 
 @Preview(showBackground = true, showSystemUi = true)

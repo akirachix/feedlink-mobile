@@ -37,7 +37,7 @@ import com.feedlink.feedlink.viewmodel.SigninViewModel
 fun SignInScreen(
     onSignInSuccess: () -> Unit = {},
     onSignUpClick: () -> Unit = {},
-    onForgotPassword: () -> Unit = {}
+    onForgotPassword: () -> Unit = {},
 ) {
     val viewModel: SigninViewModel = getViewModel()
 
@@ -190,7 +190,8 @@ fun SignInScreen(
 
                 Button(
                     onClick = {
-                        val isEmailValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                        val isEmailValid =
+                            email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches()
                         val isPasswordValid = password.isNotBlank()
 
                         isEmailError = !isEmailValid

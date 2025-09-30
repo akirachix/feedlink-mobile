@@ -29,7 +29,7 @@ import com.feedlink.feedlink.viewmodel.ForgotPasswordViewModel
 
 @Composable
 fun ForgotPasswordScreen(
-    onSendOtp: (String) -> Unit
+    onSendOtp: (String) -> Unit,
 ) {
     val viewModel: ForgotPasswordViewModel = getViewModel()
 
@@ -104,7 +104,8 @@ fun ForgotPasswordScreen(
                     },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    isError = email.isNotBlank() && !Patterns.EMAIL_ADDRESS.matcher(email).matches(),
+                    isError = email.isNotBlank() && !Patterns.EMAIL_ADDRESS.matcher(email)
+                        .matches(),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(

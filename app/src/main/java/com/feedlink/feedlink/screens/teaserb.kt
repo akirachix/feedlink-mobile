@@ -25,7 +25,7 @@ import com.feedlink.feedlink.ui.theme.Green
 @Composable
 fun SecondWelcome(
     onSkipClicked: () -> Unit,
-    onNextClicked: () -> Unit
+    onNextClicked: () -> Unit,
 ) {
     Box(
         modifier = Modifier

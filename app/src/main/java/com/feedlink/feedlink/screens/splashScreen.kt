@@ -35,7 +35,8 @@ fun SplashScreen() {
                 Image(
                     painter = painterResource(R.drawable.logo),
                     contentDescription = "FeedLink Logo",
-                    modifier = Modifier.size(350.dp)
+                    modifier = Modifier
+                        .size(350.dp)
                         .offset(x = 65.dp)
                 )
             }

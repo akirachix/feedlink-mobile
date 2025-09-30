@@ -23,12 +23,15 @@ sealed class Screen(val routeDefinition: String) {
     object SignUp : Screen("sign_up/{userRole}") {
         fun createRoute(roleValue: String) = "sign_up/$roleValue"
     }
+
     object ForgotPassword : Screen("forgot_password")
     object Verification : Screen("verification/{email}") {
         fun createRoute(emailValue: String) = "verification/$emailValue"
     }
+
     object ResetPassword : Screen("reset_password/{email}/{otp}") {
-        fun createRoute(emailValue: String, otpValue: String) = "reset_password/$emailValue/$otpValue"
+        fun createRoute(emailValue: String, otpValue: String) =
+            "reset_password/$emailValue/$otpValue"
     }
 
     val route: String get() = routeDefinition.substringBefore("/{")
@@ -114,7 +117,7 @@ fun FeedLinkNavHost(
                     userRole = passedRole,
                     onSignUpSuccess = {
                         navController.navigate(Screen.SignIn.routeDefinition) {
-                            popUpTo(Screen.AuthChoice.routeDefinition) {inclusive = true}
+                            popUpTo(Screen.AuthChoice.routeDefinition) { inclusive = true }
                         }
                     },
                     onSignInClick = { navController.navigate(Screen.SignIn.routeDefinition) }

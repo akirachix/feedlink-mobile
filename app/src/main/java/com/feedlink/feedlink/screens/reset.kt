@@ -32,7 +32,7 @@ import com.feedlink.feedlink.viewmodel.ForgotPasswordViewModel
 fun ResetPasswordScreen(
     email: String,
     otp: String,
-    onResetSuccess: () -> Unit = {}
+    onResetSuccess: () -> Unit = {},
 ) {
     val viewModel: ForgotPasswordViewModel = getViewModel()
 

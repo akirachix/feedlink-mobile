@@ -32,7 +32,7 @@ import com.feedlink.feedlink.ui.theme.Green
 @Composable
 fun ThirdWelcome(
     onSkipClicked: () -> Unit,
-    onNextClicked: () -> Unit
+    onNextClicked: () -> Unit,
 ) {
     Box(
         modifier = Modifier
