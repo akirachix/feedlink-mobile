@@ -11,7 +11,6 @@ import androidx.navigation.navArgument
 import com.example.feedlink.screens.WelcomeScreen
 
 sealed class Screen(val route: String) {
-    // Auth Flow
     object Splash : Screen("splash")
     object Teaser1 : Screen("teaser1")
     object Teaser2 : Screen("teaser2")
