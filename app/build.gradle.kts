@@ -39,28 +39,12 @@ android {
     }
 }
 
-<<<<<<< HEAD
-dependencies {
-
-=======
-
 
 dependencies {
->>>>>>> 63ba7827773a07c519598e8fb41a575867938fa6
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-<<<<<<< HEAD
-=======
+
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.foundation)
 
->>>>>>> 63ba7827773a07c519598e8fb41a575867938fa6
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -69,11 +53,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-<<<<<<< HEAD
-=======
+
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 
->>>>>>> 63ba7827773a07c519598e8fb41a575867938fa6
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
@@ -112,25 +94,17 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended:1.6.7")
 
-<<<<<<< HEAD
-    implementation("androidx.compose.material:material-icons-extended:<compose_version>")
-=======
->>>>>>> 63ba7827773a07c519598e8fb41a575867938fa6
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("androidx.compose.runtime:runtime-livedata:1.6.7")
 
-<<<<<<< HEAD
+
+
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
     implementation("androidx.navigation:navigation-compose:2.7.5")
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
-=======
+
     implementation("androidx.navigation:navigation-compose:2.7.5")
 
->>>>>>> 63ba7827773a07c519598e8fb41a575867938fa6
     implementation("io.coil-kt:coil-compose:2.5.0")
 
     implementation("com.google.android.gms:play-services-location:21.1.0") {
@@ -145,9 +119,7 @@ dependencies {
     implementation("io.insert-koin:koin-androidx-compose:3.5.3")
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.16")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-<<<<<<< HEAD
+
 
 }
-=======
-}
->>>>>>> 63ba7827773a07c519598e8fb41a575867938fa6
+
