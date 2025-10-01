@@ -47,12 +47,10 @@ val repositoryModule = module {
 }
 
 val viewModelModule = module {
-    // Auth ViewModels
     viewModel { SignupViewModel(get()) }
     viewModel { SigninViewModel(get()) }
     viewModel { ForgotPasswordViewModel(get()) }
 
-    // Listings ViewModels
     viewModel { ListingsViewModel(get()) }
     viewModel { ProductDetailViewModel(get()) }
 }
