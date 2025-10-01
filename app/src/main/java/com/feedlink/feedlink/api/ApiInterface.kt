@@ -6,7 +6,6 @@ import retrofit2.http.*
 
 interface ApiInterface {
 
-    // === Listings Endpoints ===
     @GET("listings/")
     suspend fun fetchListings(
         @Query("latitude") latitude: Double?,
@@ -18,14 +17,13 @@ interface ApiInterface {
         @Path("id") listingId: Int
     ): Response<Listing>
 
-    // === Auth Endpoints ===
     @POST("signup/")
     suspend fun signup(@Body request: SignUpRequest): Response<SignUpResponse>
 
     @POST("login/")
     suspend fun login(@Body request: SignInRequest): Response<SignInResponse>
 
-    @POST("forgotpassword/")
+    @POST("forgot password/")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<VerificationResponse>
 
     @POST("reset/")
