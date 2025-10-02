@@ -9,9 +9,10 @@ import com.feedlink.feedlink.R
 
 
 val Nunito = FontFamily(
-    Font(R.font.nunito, FontWeight.Normal),
-
-    )
+    Font(R.font.nunito_regular, FontWeight.Medium),
+    Font(R.font.nunito_bold, FontWeight.Bold),
+    Font(R.font.nunito_light, FontWeight.Normal)
+)
 
 
 val AppTypography = Typography(

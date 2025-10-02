@@ -1,19 +1,21 @@
 package com.feedlink.feedlink.api
 
-import com.feedlink.feedlink.model.ForgotPasswordRequest
-import com.feedlink.feedlink.model.ResetPasswordRequest
-import com.feedlink.feedlink.model.SignInRequest
-import com.feedlink.feedlink.model.SignInResponse
-import com.feedlink.feedlink.model.SignUpRequest
-import com.feedlink.feedlink.model.SignUpResponse
-import com.feedlink.feedlink.model.VerificationResponse
-import com.feedlink.feedlink.model.VerificationRequest
+import com.feedlink.feedlink.model.*
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.POST
-
+import retrofit2.http.*
 
 interface ApiInterface {
+
+    @GET("listings/")
+    suspend fun fetchListings(
+        @Query("latitude") latitude: Double?,
+        @Query("longitude") longitude: Double?
+    ): Response<List<Listing>>
+
+    @GET("listings/{id}/")
+    suspend fun fetchProductDetail(
+        @Path("id") listingId: Int
+    ): Response<Listing>
 
     @POST("signup/")
     suspend fun signup(@Body request: SignUpRequest): Response<SignUpResponse>
@@ -21,7 +23,7 @@ interface ApiInterface {
     @POST("login/")
     suspend fun login(@Body request: SignInRequest): Response<SignInResponse>
 
-    @POST("forgotpassword/")
+    @POST("forgot password/")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<VerificationResponse>
 
     @POST("reset/")
