@@ -1,5 +1,6 @@
 package com.feedlink.feedlink.screens
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -66,6 +67,7 @@ fun TimerScreen(
     val timerExpired by viewModel.timerExpired.collectAsState()
     val isOverdue by viewModel.isOverdue.collectAsState()
     val pickupDeadline by viewModel.pickupDeadline.collectAsState()
+    val totalTime by viewModel.totalTimeInSeconds.collectAsState()
     var timeLeft by remember { mutableStateOf(0) }
     var isRunning by remember { mutableStateOf(true) }
 
@@ -200,12 +202,6 @@ fun TimerScreen(
                                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                             )
 
-                            val totalTime = if (pickupDeadline != null) {
-                                val claimTime = parseClaimTime(claim.claimTime!!)
-                                ((pickupDeadline!!.time - claimTime.time) / 1000).toInt()
-                            } else {
-                                3600
-                            }
                             val progress = if (timerExpired || isOverdue) 0f else timeLeft.toFloat() / totalTime
 
                             drawArc(
@@ -296,9 +292,11 @@ private fun parseClaimTime(claimTime: String?): Date {
                 return date
             }
         } catch (e: Exception) {
+            Log.d("TimeParsing", "Failed to parse '$claimTime' with format '${format.toPattern()}': ${e.message}")
         }
     }
 
+    Log.e("TimeParsing", "Could not parse claim time: $claimTime")
     return Date(0)
 }
 

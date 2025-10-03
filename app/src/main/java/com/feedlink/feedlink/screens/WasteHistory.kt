@@ -1,5 +1,6 @@
 package com.feedlink.feedlink.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -253,6 +254,7 @@ private fun formatMonthHeader(dateString: String): String {
         val monthFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         monthFormat.format(date)
     } catch (e: Exception) {
+        Log.e("WasteHistory", "Error formatting month header: $dateString", e)
         dateString
     }
 }
@@ -266,6 +268,7 @@ private fun formatDateTime(dateTimeString: String?): String {
         val timeFormat = SimpleDateFormat("h:mm a, MMM d", Locale.getDefault())
         timeFormat.format(date)
     } catch (e: Exception) {
+        Log.e("WasteHistory", "Error formatting date time: $dateTimeString", e)
         "Unknown"
     }
 }

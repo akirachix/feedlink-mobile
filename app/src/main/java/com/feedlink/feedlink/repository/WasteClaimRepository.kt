@@ -1,6 +1,7 @@
 package com.feedlink.feedlink.repository
 
 import com.feedlink.feedlink.api.ApiInterface
+import com.feedlink.feedlink.model.StatusRequest
 import com.feedlink.feedlink.model.WasteClaim
 
 class WasteClaimRepository(private val api: ApiInterface) {
@@ -33,7 +34,8 @@ class WasteClaimRepository(private val api: ApiInterface) {
 
     suspend fun updateClaimStatus(claimId: Int, status: String): Result<WasteClaim> {
         return try {
-            val updatedClaim = api.updateClaimStatus(claimId, status)
+            val statusRequest = StatusRequest(status)
+            val updatedClaim = api.updateClaimStatus(claimId, statusRequest)
             Result.success(updatedClaim)
         } catch (e: Exception) {
             Result.failure(e)

@@ -159,7 +159,6 @@ fun NotificationItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Notification icon
             Box(
                 modifier = Modifier
                     .size(40.dp)

@@ -1,6 +1,6 @@
-// NotificationViewModel.kt
 package com.feedlink.feedlink.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.feedlink.feedlink.model.Notification
@@ -31,9 +31,11 @@ class NotificationViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = NotificationUiState.Loading
             try {
+
                 _notifications.value = emptyList()
-                _uiState.value = NotificationUiState.Success(emptyList())
+                _uiState.value = NotificationUiState.Success(_notifications.value)
             } catch (e: Exception) {
+                Log.e("NotificationViewModel", "Error fetching notifications", e)
                 _uiState.value = NotificationUiState.Error("Error: ${e.message}")
             }
         }

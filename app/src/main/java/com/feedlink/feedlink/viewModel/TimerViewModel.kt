@@ -1,5 +1,6 @@
 package com.feedlink.feedlink.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.feedlink.feedlink.model.WasteClaim
@@ -27,6 +28,9 @@ class TimerViewModel(
     private val _pickupDeadline = MutableStateFlow<Date?>(null)
     val pickupDeadline: StateFlow<Date?> = _pickupDeadline.asStateFlow()
 
+    private val _totalTimeInSeconds = MutableStateFlow(3600)
+    val totalTimeInSeconds: StateFlow<Int> = _totalTimeInSeconds.asStateFlow()
+
     init {
         fetchWasteClaim()
     }
@@ -34,7 +38,6 @@ class TimerViewModel(
     fun fetchWasteClaim() {
         viewModelScope.launch {
             _wasteClaim.value = repository.getWasteClaimById(claimId)
-
             val result = _wasteClaim.value
             if (result?.isSuccess == true) {
                 val claim = result.getOrNull()
@@ -50,26 +53,25 @@ class TimerViewModel(
         val claimTime = claim.claimTime
         if (claimTime != null) {
             try {
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
                 val claimDate = dateFormat.parse(claimTime)
 
-                val claimCalendar = Calendar.getInstance()
-                claimCalendar.time = claimDate
-
-                val pickupCalendar = Calendar.getInstance()
-                pickupCalendar.time = claimDate
-                pickupCalendar.set(Calendar.HOUR_OF_DAY, 9)
-                pickupCalendar.set(Calendar.MINUTE, 0)
-                pickupCalendar.set(Calendar.SECOND, 0)
-                pickupCalendar.set(Calendar.MILLISECOND, 0)
-
-
-                if (pickupCalendar.before(claimCalendar)) {
-                    pickupCalendar.add(Calendar.DAY_OF_MONTH, 1)
+                val claimCalendar = Calendar.getInstance().apply { time = claimDate!! }
+                val pickupCalendar = Calendar.getInstance().apply {
+                    time = claimDate!!
+                    set(Calendar.HOUR_OF_DAY, 9)
+                    set(Calendar.MINUTE, 0)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
+                    if (before(claimCalendar)) {
+                        add(Calendar.DAY_OF_MONTH, 1)
+                    }
                 }
 
                 _pickupDeadline.value = pickupCalendar.time
+                _totalTimeInSeconds.value = ((pickupCalendar.timeInMillis - claimCalendar.timeInMillis) / 1000).toInt()
             } catch (e: Exception) {
+                Log.e("TimerViewModel", "Error parsing claim time", e)
                 _pickupDeadline.value = null
             }
         } else {
@@ -82,7 +84,6 @@ class TimerViewModel(
         if (deadline != null) {
             val now = Date()
             _isOverdue.value = now.after(deadline)
-
             if (_isOverdue.value) {
                 _timerExpired.value = true
             }
@@ -92,13 +93,10 @@ class TimerViewModel(
     }
 
     fun getTimeLeftInSeconds(): Int {
-        val deadline = _pickupDeadline.value
-        if (deadline != null) {
-            val now = Date()
-            val timeLeftInMillis = deadline.time - now.time
-            return if (timeLeftInMillis > 0) (timeLeftInMillis / 1000).toInt() else 0
-        }
-        return 0
+        val deadline = _pickupDeadline.value ?: return 0
+        val now = Date()
+        val timeLeftInMillis = deadline.time - now.time
+        return if (timeLeftInMillis > 0) (timeLeftInMillis / 1000).toInt() else 0
     }
 
     fun onTimerExpired() {

@@ -1,5 +1,6 @@
 package com.feedlink.feedlink.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.feedlink.feedlink.model.WasteClaim
@@ -39,6 +40,7 @@ class WasteClaimViewModel(
                     }
                 )
             } catch (e: Exception) {
+                Log.e("WasteClaimViewModel", "Unexpected error fetching claims", e)
                 _uiState.value = WasteClaimUiState.Error("Unexpected error: ${e.message}")
             }
         }

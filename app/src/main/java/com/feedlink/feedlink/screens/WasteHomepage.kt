@@ -1,5 +1,11 @@
 package com.feedlink.feedlink.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -28,14 +34,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import com.feedlink.feedlink.model.Listing
+import com.feedlink.feedlink.utils.NotificationManager
 import com.feedlink.feedlink.viewModel.ListingUiState
 import com.feedlink.feedlink.viewModel.ListingViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -46,12 +55,14 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WasteHomepage(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val viewModel: ListingViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val showClaimSuccessDialog by viewModel.showClaimSuccessDialog.collectAsState()
     val claimedListings by viewModel.claimedListings.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val newListingDetected by viewModel.newListingDetected.collectAsState()
 
     val listState = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope()
@@ -59,6 +70,50 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
 
     LaunchedEffect(Unit) {
         viewModel.fetchInedibleListings()
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            NotificationManager.showNotification(
+                context,
+                "New Waste Available!",
+                "New inedible waste items are available for claim."
+            )
+        }
+
+        viewModel.resetNewListingFlag()
+    }
+
+    LaunchedEffect(newListingDetected) {
+        if (newListingDetected) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                when (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                )) {
+                    PackageManager.PERMISSION_GRANTED -> {
+                        NotificationManager.showNotification(
+                            context,
+                            "New Waste Available!",
+                            "New inedible waste items are available for claim."
+                        )
+                        viewModel.resetNewListingFlag()
+                    }
+                    else -> {
+                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+            } else {
+                NotificationManager.showNotification(
+                    context,
+                    "New Waste Available!",
+                    "New inedible waste items are available for claim."
+                )
+                viewModel.resetNewListingFlag()
+            }
+        }
     }
 
     val filteredListings = when (val currentState = uiState) {
@@ -75,7 +130,7 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissClaimSuccessDialog() },
             title = { Text("Claim Successful") },
-            text = { Text("You have successfully claimed this waste item.") },
+            text = { Text("You have successfully claimed this waste item. Please check your email for the pickup PIN.") },
             confirmButton = {
                 Button(
                     onClick = { viewModel.dismissClaimSuccessDialog() }
@@ -104,7 +159,7 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Waste to Resource",
+                            text = "Available Inedible Waste",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = Color.Black
@@ -216,7 +271,7 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Check logs for available product types",
+                                    text = "Check back later for new waste items",
                                     fontSize = 14.sp,
                                     color = Color.Gray
                                 )
@@ -426,7 +481,6 @@ fun ListingDetailsPopup(
                     DetailRow(label = "Discounted Price", value = it)
                 }
 
-                // Dates with human-readable formatting
                 listing.expiryDate?.let {
                     DetailRow(label = "Expiry Date", value = formatDateTime(it))
                 }
@@ -511,12 +565,13 @@ private fun formatDateTime(dateString: String?): String {
 
                 return outputFormat
             } catch (e: Exception) {
-
+                Log.e("WasteHomepage", "Error formatting date: $dateString", e)
             }
         }
 
         dateString
     } catch (e: Exception) {
+        Log.e("WasteHomepage", "Error formatting date: $dateString", e)
         dateString
     }
 }
@@ -536,6 +591,7 @@ private fun formatDuration(durationString: String?): String {
 
         durationString
     } catch (e: Exception) {
+        Log.e("WasteHomepage", "Error formatting duration: $durationString", e)
         durationString
     }
 }

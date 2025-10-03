@@ -1,6 +1,7 @@
 package com.feedlink.feedlink.api
 
 import com.feedlink.feedlink.model.Listing
+import com.feedlink.feedlink.model.StatusRequest
 import com.feedlink.feedlink.model.WasteClaim
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -24,6 +25,6 @@ interface ApiInterface {
         @PUT("waste-claims/{id}/status")
         suspend fun updateClaimStatus(
                 @Path("id") claimId: Int,
-                @Body statusRequest: String
+                @Body statusRequest: StatusRequest
         ): WasteClaim
 }
