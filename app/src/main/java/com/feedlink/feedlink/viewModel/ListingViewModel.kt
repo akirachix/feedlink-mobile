@@ -130,7 +130,7 @@ class ListingViewModel(
                     val currentTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
                     val wasteClaim = WasteClaim(
                         listingId = listingId,
-                        user = 18, // TODO: Replace with actual user ID
+                        user = 18,
                         claimTime = currentTime,
                         claimStatus = "pending"
                     )
