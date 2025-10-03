@@ -32,8 +32,10 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WasteHistory(modifier: Modifier = Modifier) {
-    val viewModel: WasteClaimViewModel = koinViewModel()
+fun WasteHistory(
+    viewModel: WasteClaimViewModel = koinViewModel(),
+    modifier: Modifier = Modifier
+) {
     val uiState by viewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 

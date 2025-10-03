@@ -34,11 +34,11 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WasteCollection(
+    viewModel: WasteClaimViewModel = koinViewModel(),
     onTimerClick: (Int) -> Unit,
     onContinueClaimingClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val viewModel: WasteClaimViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {

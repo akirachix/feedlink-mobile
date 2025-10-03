@@ -27,6 +27,7 @@ import com.feedlink.feedlink.screens.WasteCollection
 import com.feedlink.feedlink.screens.WasteHomepage
 import com.feedlink.feedlink.screens.WasteHistory
 import com.feedlink.feedlink.screens.WasteNotifications
+import org.koin.androidx.compose.koinViewModel
 
 sealed class BottomNavItem(val route: String, val title: String, val icon: ImageVector) {
     object Home : BottomNavItem("home", "Home", Icons.Default.Home)
@@ -53,6 +54,7 @@ fun FeedLinkNavGraph() {
             }
             composable(BottomNavItem.Collection.route) {
                 WasteCollection(
+                    viewModel = koinViewModel(),
                     onTimerClick = { claimId ->
                         navController.navigate("timer/$claimId")
                     },
@@ -65,7 +67,7 @@ fun FeedLinkNavGraph() {
                 )
             }
             composable(BottomNavItem.History.route) {
-                WasteHistory()
+                WasteHistory(viewModel = koinViewModel())
             }
             composable(BottomNavItem.Notifications.route) {
                 WasteNotifications()
