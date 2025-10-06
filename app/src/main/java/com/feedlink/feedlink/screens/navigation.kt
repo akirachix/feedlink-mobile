@@ -261,7 +261,6 @@ fun FeedLinkNavHost(
             )
 
             TimerScreen(
-                viewModel = viewModel,
                 onBackClick = { navController.popBackStack() },
                 claimId = claimId
             )

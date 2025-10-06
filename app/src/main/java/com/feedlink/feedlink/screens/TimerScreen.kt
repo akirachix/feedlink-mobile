@@ -26,14 +26,16 @@ import com.feedlink.feedlink.R
 import com.feedlink.feedlink.utils.DateUtils
 import com.feedlink.feedlink.viewmodel.TimerViewModel
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(
-    viewModel: TimerViewModel,
     onBackClick: () -> Unit,
-    claimId: Int?
+    claimId: Int,
+    viewModel: TimerViewModel= koinViewModel(parameters = {parametersOf(claimId)}),
 ) {
     if (claimId == null) {
         Box(
