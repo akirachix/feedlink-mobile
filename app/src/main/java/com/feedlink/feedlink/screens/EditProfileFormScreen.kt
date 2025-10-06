@@ -115,7 +115,7 @@ fun EditProfileFormScreen(
         }
     }
 
-    // ✅ Improved error handling with user-friendly messages
+
     LaunchedEffect(error) {
         error?.let { errorMsg ->
             val userMessage = when {
@@ -237,7 +237,7 @@ fun EditProfileFormScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        // ✅ Optional: Validate email format before saving
+
                         if (uiEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(uiEmail).matches()) {
                             Toast.makeText(context, "Please enter a valid email address.", Toast.LENGTH_SHORT).show()
                             return@Button
