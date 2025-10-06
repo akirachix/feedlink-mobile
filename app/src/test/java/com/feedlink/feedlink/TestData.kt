@@ -6,12 +6,12 @@ object TestData {
 
     val mockUserProfile = UserProfile(
         id = 1,
-        firstName = "Jane",
-        lastName = "Doe",
-        email = "jane@example.com",
-        role = "User",
-        profilePicture = "https://example.com/profile.jpg",
-        address = "123 Main St",
+        firstName = "semhal",
+        lastName = "estif",
+        email = "semhalestif@gmail.com",
+        role = "Buyer",
+        profilePicture = "https://example.com/semhal.jpg",
+        address = "Nairobi,Kenya",
         tillNumber = "123456",
         latitude = 37.7749,
         longitude = -122.4194
