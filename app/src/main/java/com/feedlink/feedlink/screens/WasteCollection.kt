@@ -1,6 +1,5 @@
 package com.feedlink.feedlink.screens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,12 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.model.WasteClaim
+import com.feedlink.feedlink.utils.DateUtils
 import com.feedlink.feedlink.viewmodel.WasteClaimUiState
 import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import org.koin.androidx.compose.koinViewModel
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,8 +100,8 @@ fun WasteCollection(
                     ) {
                         val sortedClaims = currentState.claims.sortedWith { claim1, claim2 ->
                             try {
-                                val date1 = parseClaimTime(claim1.claimTime)
-                                val date2 = parseClaimTime(claim2.claimTime)
+                                val date1 = DateUtils.parseClaimTime(claim1.claimTime)
+                                val date2 = DateUtils.parseClaimTime(claim2.claimTime)
                                 date2.compareTo(date1)
                             } catch (e: Exception) {
                                 0
@@ -195,14 +192,14 @@ fun WasteClaimItem(
                     color = Color.Gray
                 )
                 Text(
-                    text = "Claimed: ${formatClaimTime(claim.claimTime)}",
+                    text = "Claimed: ${DateUtils.formatClaimTime(claim.claimTime)}",
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = formatDuration(claim.claimTime),
+                    text = DateUtils.formatDuration(claim.claimTime),
                     fontSize = 14.sp,
                     color = Color.Black,
                     modifier = Modifier.padding(end = 8.dp)
@@ -219,102 +216,5 @@ fun WasteClaimItem(
                 }
             }
         }
-    }
-}
-
-private fun parseClaimTime(claimTime: String?): Date {
-    if (claimTime == null) return Date(0)
-
-    val formats = listOf(
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()),
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-    )
-
-    for (format in formats) {
-        try {
-            if (claimTime.endsWith("Z")) {
-                format.timeZone = TimeZone.getTimeZone("UTC")
-            } else {
-                format.timeZone = TimeZone.getDefault()
-            }
-
-            val date = format.parse(claimTime)
-            if (date != null) {
-                Log.d("TimeParsing", "Successfully parsed '$claimTime' with format '${format.toPattern()}'")
-                return date
-            }
-        } catch (e: Exception) {
-            Log.d("TimeParsing", "Failed to parse '$claimTime' with format '${format.toPattern()}': ${e.message}")
-        }
-    }
-
-    Log.e("TimeParsing", "Could not parse claim time: $claimTime")
-    return Date(0)
-}
-
-private fun formatClaimTime(claimTime: String?): String {
-    if (claimTime == null) return "Unknown time"
-
-    return try {
-        val claimDate = parseClaimTime(claimTime)
-        val now = Date()
-
-        val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-        dateFormat.timeZone = TimeZone.getDefault()
-
-        dateFormat.format(claimDate)
-    } catch (e: Exception) {
-        claimTime
-    }
-}
-
-private fun formatDuration(claimTime: String?): String {
-    if (claimTime == null) return "00:00"
-
-    return try {
-        val claimDate = parseClaimTime(claimTime)
-
-        val now = Date()
-
-        Log.d("TimeFormatting", "Claim time: $claimTime")
-        Log.d("TimeFormatting", "Parsed claim date: $claimDate")
-        Log.d("TimeFormatting", "Current time: $now")
-
-        val diffInMillis = now.time - claimDate.time
-
-        if (diffInMillis < 0) {
-            Log.d("TimeFormatting", "Claim time is in the future, showing 00:00")
-            return "00:00"
-        }
-
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(diffInMillis)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(diffInMillis)
-        val hours = TimeUnit.MILLISECONDS.toHours(diffInMillis)
-        val days = TimeUnit.MILLISECONDS.toDays(diffInMillis)
-
-        val formattedTime = when {
-            days >= 7 -> {
-                val weeks = days / 7
-                if (weeks >= 4) {
-                    val months = weeks / 4
-                    "${months}mo ago"
-                } else {
-                    "${weeks}w ago"
-                }
-            }
-            days >= 1 -> "${days}d ago"
-            hours >= 1 -> "${hours}h ago"
-            minutes >= 1 -> "${minutes}m ago"
-            else -> "Just now"
-        }
-
-        Log.d("TimeFormatting", "Formatted duration: $formattedTime (diffInMillis: $diffInMillis)")
-
-        formattedTime
-    } catch (e: Exception) {
-        Log.e("TimeFormatting", "Error formatting duration: ${e.message}")
-        "00:00"
     }
 }

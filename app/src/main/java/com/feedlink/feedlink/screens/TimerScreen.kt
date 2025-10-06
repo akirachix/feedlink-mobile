@@ -1,6 +1,5 @@
 package com.feedlink.feedlink.screens
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,18 +22,16 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.repository.WasteClaimRepository
+import com.feedlink.feedlink.utils.DateUtils
 import com.feedlink.feedlink.viewmodel.TimerViewModel
 import kotlinx.coroutines.delay
 import org.koin.core.context.GlobalContext
 import kotlin.math.min
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -158,7 +155,7 @@ fun TimerScreen(
 
                     val wasteDetails = "Claim ID: ${claim.wasteId}\n" +
                             "Status: ${claim.claimStatus}\n" +
-                            "Claimed at: ${formatClaimTime(claim.claimTime)}"
+                            "Claimed at: ${DateUtils.formatClaimTime(claim.claimTime)}"
 
                     Text(
                         text = wasteDetails,
@@ -171,7 +168,7 @@ fun TimerScreen(
 
                     pickupDeadline?.let { deadline ->
                         Text(
-                            text = "Pickup deadline: ${formatDeadline(deadline)}",
+                            text = "Pickup deadline: ${DateUtils.formatDeadline(deadline)}",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = if (isOverdue) Color.Red else Color.Gray
                             ),
@@ -217,7 +214,7 @@ fun TimerScreen(
                         }
 
                         Text(
-                            text = if (isOverdue) "00:00" else if (timerExpired) "00:00" else formatTime(timeLeft),
+                            text = if (isOverdue) "00:00" else if (timerExpired) "00:00" else DateUtils.formatTime(timeLeft),
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = if (timerExpired || isOverdue) Color.Gray else Color(0xFF4CAF50),
                                 fontWeight = FontWeight.Bold
@@ -263,64 +260,6 @@ fun TimerScreen(
             }
         }
     }
-}
-
-private fun formatTime(seconds: Int): String {
-    val minutes = seconds / 60
-    val secs = seconds % 60
-    return String.format("%02d:%02d", minutes, secs)
-}
-
-private fun parseClaimTime(claimTime: String?): Date {
-    if (claimTime == null) return Date(0)
-    val formats = listOf(
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()),
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()),
-        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()),
-        SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-    )
-
-    for (format in formats) {
-        try {
-            if (claimTime.endsWith("Z")) {
-                format.timeZone = TimeZone.getTimeZone("UTC")
-            } else {
-                format.timeZone = TimeZone.getDefault()
-            }
-
-            val date = format.parse(claimTime)
-            if (date != null) {
-                return date
-            }
-        } catch (e: Exception) {
-            Log.d("TimeParsing", "Failed to parse '$claimTime' with format '${format.toPattern()}': ${e.message}")
-        }
-    }
-
-    Log.e("TimeParsing", "Could not parse claim time: $claimTime")
-    return Date(0)
-}
-
-private fun formatClaimTime(claimTime: String?): String {
-    if (claimTime == null) return "Unknown time"
-
-    return try {
-        val claimDate = parseClaimTime(claimTime)
-        val now = Date()
-
-        val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-        dateFormat.timeZone = TimeZone.getDefault()
-
-        dateFormat.format(claimDate)
-    } catch (e: Exception) {
-        claimTime
-    }
-}
-
-private fun formatDeadline(deadline: Date): String {
-    val outputFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-    outputFormat.timeZone = TimeZone.getDefault()
-    return outputFormat.format(deadline)
 }
 
 class TimerViewModelFactory(
