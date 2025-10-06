@@ -72,21 +72,16 @@ fun EditProfileFormScreen(
     var uiLastName by remember { mutableStateOf("") }
     var uiEmail by remember { mutableStateOf("") }
 
-    var isEmailValid by remember { mutableStateOf(true) }
-
     LaunchedEffect(userProfile) {
         userProfile?.let { profile ->
             uiFirstName = profile.firstName ?: ""
             uiLastName = profile.lastName ?: ""
             uiEmail = profile.email ?: ""
-            isEmailValid = uiEmail.isBlank() || android.util.Patterns.EMAIL_ADDRESS.matcher(uiEmail).matches()
         }
     }
-
     val imageToDisplay by remember(userProfile?.profilePicture) {
         mutableStateOf(userProfile?.profilePicture ?: "https://via.placeholder.com/150")
     }
-
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
@@ -96,7 +91,6 @@ fun EditProfileFormScreen(
             profileViewModel.onImageSelected(context, it)
         }
     }
-
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap: Bitmap? ->
@@ -107,7 +101,6 @@ fun EditProfileFormScreen(
             }
         }
     }
-
     LaunchedEffect(userIdToEdit) {
         if (userProfile?.id != userIdToEdit) {
             profileViewModel.fetchUserProfile(userIdToEdit)
@@ -122,13 +115,14 @@ fun EditProfileFormScreen(
         }
     }
 
+    // ✅ Improved error handling with user-friendly messages
     LaunchedEffect(error) {
         error?.let { errorMsg ->
             val userMessage = when {
                 errorMsg.contains("400", ignoreCase = true) || errorMsg.contains("email.*exist", ignoreCase = true) -> {
                     "This email is already in use. Please choose another."
                 }
-                errorMsg.contains("invalid", ignoreCase = true) || errorMsg.contains("format", ignoreCase = true) -> {
+                errorMsg.contains("invalid", ignoreCase = true) || errorMsg.contains("format", ignoreCase = true) || uiEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(uiEmail).matches() -> {
                     "Please enter a valid email address."
                 }
                 errorMsg.contains("401", ignoreCase = true) || errorMsg.contains("unauthorized", ignoreCase = true) -> {
@@ -144,26 +138,6 @@ fun EditProfileFormScreen(
     }
 
     val darkGreenColor = Color(0xFF234B06)
-    val errorRedColor = MaterialTheme.colorScheme.error
-
-    val emailTextFieldColors = if (isEmailValid) {
-        OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = darkGreenColor,
-            unfocusedBorderColor = darkGreenColor.copy(alpha = 0.7f),
-            cursorColor = darkGreenColor,
-            focusedLabelColor = darkGreenColor,
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    } else {
-        OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = errorRedColor,
-            unfocusedBorderColor = errorRedColor.copy(alpha = 0.7f),
-            cursorColor = errorRedColor,
-            focusedLabelColor = errorRedColor,
-            unfocusedLabelColor = errorRedColor,
-        )
-    }
-
     val customTextFieldColors = OutlinedTextFieldDefaults.colors(
         focusedBorderColor = darkGreenColor,
         unfocusedBorderColor = darkGreenColor.copy(alpha = 0.7f),
@@ -239,34 +213,14 @@ fun EditProfileFormScreen(
                     externalLabelColor = darkGreenColor,
                     textFieldColors = customTextFieldColors
                 )
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Email",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isEmailValid) darkGreenColor else errorRedColor,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    OutlinedTextField(
-                        value = uiEmail,
-                        onValueChange = { newValue ->
-                            uiEmail = newValue
-                            isEmailValid = newValue.isBlank() || android.util.Patterns.EMAIL_ADDRESS.matcher(newValue).matches()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        colors = emailTextFieldColors,
-                        textStyle = TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface),
-                        isError = !isEmailValid
-                    )
-                    if (!isEmailValid && uiEmail.isNotBlank()) {
-                        Text(
-                            text = "Please enter a valid email address.",
-                            color = errorRedColor,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
+                CustomOutlinedTextField(
+                    value = uiEmail,
+                    onValueChange = { uiEmail = it },
+                    label = "Email",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    externalLabelColor = darkGreenColor,
+                    textFieldColors = customTextFieldColors
+                )
 
                 userProfile?.address?.let { address ->
                     if (address.isNotBlank()) {
@@ -283,14 +237,11 @@ fun EditProfileFormScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        val emailIsValid = uiEmail.isBlank() || android.util.Patterns.EMAIL_ADDRESS.matcher(uiEmail).matches()
-                        isEmailValid = emailIsValid
-
-                        if (!emailIsValid) {
+                        // ✅ Optional: Validate email format before saving
+                        if (uiEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(uiEmail).matches()) {
                             Toast.makeText(context, "Please enter a valid email address.", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
-
                         profileViewModel.saveProfileWithImage(
                             userId = userIdToEdit,
                             firstName = uiFirstName,
@@ -298,7 +249,7 @@ fun EditProfileFormScreen(
                             email = uiEmail
                         )
                     },
-                    enabled = !isUpdatingProfile && isEmailValid,
+                    enabled = !isUpdatingProfile,
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = darkGreenColor,

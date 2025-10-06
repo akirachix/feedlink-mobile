@@ -7,7 +7,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.feedlink.feedlink.auth.TokenManager
-import com.feedlink.feedlink.navigation.AppScreen
 
 @Composable
 fun AppNavigation() {
@@ -15,9 +14,9 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = AppScreen.ViewProfile.route
+        startDestination = "view_profile_screen"
     ) {
-        composable(route = AppScreen.ViewProfile.route) {
+        composable(route = "view_profile_screen") {
             ViewProfileScreen(
                 onNavigateToEdit = { userId ->
                     navController.navigate("edit_profile/$userId")
@@ -31,7 +30,6 @@ fun AppNavigation() {
                 }
             )
         }
-
         composable(
             route = "edit_profile/{userId}",
             arguments = listOf(

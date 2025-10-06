@@ -9,11 +9,9 @@ import retrofit2.Response
 import java.io.File
 
 class ProfileRepository(private val api: ApiInterface) {
-
     suspend fun fetchUserProfileById(userId: Int): Response<UserProfile> {
         return api.getUserProfileById(userId)
     }
-
     suspend fun updateProfileWithImage(
         userId: Int,
         firstName: String?,
