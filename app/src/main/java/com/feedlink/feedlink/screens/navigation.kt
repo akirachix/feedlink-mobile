@@ -1,4 +1,3 @@
-
 package com.feedlink.feedlink.screens
 
 import androidx.compose.foundation.layout.padding
@@ -30,8 +29,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.feedlink.screens.WelcomeScreen
+import com.feedlink.feedlink.viewmodel.TimerViewModel
 import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
@@ -231,7 +232,7 @@ fun FeedLinkNavHost(
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToOrders = { navController.navigate(Screen.Home.route) },
                 onNavigateToNotifications = { navController.navigate(Screen.Home.route) },
-                onProceedToCheckout = { /* TODO */ }
+                onProceedToCheckout = { }
             )
         }
 
@@ -252,13 +253,22 @@ fun FeedLinkNavHost(
             arguments = listOf(navArgument("claimId") { type = NavType.IntType })
         ) { backStackEntry ->
             val claimId = backStackEntry.arguments?.getInt("claimId") ?: -1
+            if (claimId == -1) return@composable
+
+            val viewModel: TimerViewModel = koinViewModel(
+                key = "timer_vm_$claimId",
+                parameters = { parametersOf(claimId) }
+            )
+
             TimerScreen(
+                viewModel = viewModel,
                 onBackClick = { navController.popBackStack() },
                 claimId = claimId
             )
         }
     }
 }
+
 @Composable
 fun RecyclerAppNavGraph(navController: NavController) {
     val recyclerNavController = rememberNavController()
@@ -283,7 +293,7 @@ fun RecyclerAppNavGraph(navController: NavController) {
             }
             composable(Screen.Collection.route) {
                 WasteCollection(
-                    viewModel = koinViewModel< WasteClaimViewModel>(),
+                    viewModel = koinViewModel<WasteClaimViewModel>(),
                     onTimerClick = { claimId ->
                         navController.navigate(Screen.Timer.createRoute(claimId))
                     },

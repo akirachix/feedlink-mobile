@@ -1,80 +1,124 @@
 package com.feedlink.feedlink.viewModel
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.feedlink.feedlink.TestData
+import com.feedlink.feedlink.model.Listing
+import com.feedlink.feedlink.model.WasteClaim
 import com.feedlink.feedlink.repository.WasteClaimRepository
 import com.feedlink.feedlink.viewmodel.TimerViewModel
-import io.mockk.coEvery
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@ExperimentalCoroutinesApi
 class TimerViewModelTest {
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    private lateinit var mockRepository: WasteClaimRepository
-    private val testDispatcher = UnconfinedTestDispatcher()
+    private lateinit var repository: WasteClaimRepository
+    private lateinit var viewModel: TimerViewModel
+
     private val claimId = 1
+    private val listingId = 100
+
+    private val now = Date()
+    private val claimTime = Date(now.time - 1000)
+    private val pickupDeadline = Date(now.time + 3600000)
+
+    private val mockClaim = WasteClaim(
+        wasteId = claimId,
+        listingId = listingId,
+        claimTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(claimTime),
+        claimStatus = "pending"
+    )
+
+    private val mockListing = Listing(
+        productType = "edible",
+        category = "Dairy",
+        description = "Natural",
+        quantity = "10.00",
+        listingId = listingId,
+        originalPrice = 97f,
+        discountedPrice = 80f,
+        expiryDate = "2025-10-04T05:52:00Z",
+        image = "https://example.com/image.jpg",
+        imageUrl = null,
+        status = "available",
+        createdAt = "2025-10-06T05:52:36.976179Z",
+        updatedAt = "2025-10-06T05:52:36.976191Z",
+        uploadMethod = "manual",
+        pickupWindowDuration = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(pickupDeadline),
+        unit = "L",
+        producer = 23
+    )
 
     @Before
     fun setup() {
-        Dispatchers.setMain(testDispatcher)
-        mockRepository = mockk()
+        mockkStatic(android.util.Log::class)
+        every { android.util.Log.e(any(), any()) } returns 0
+        every { android.util.Log.d(any(), any()) } returns 0
+        every { android.util.Log.i(any(), any()) } returns 0
 
-        coEvery { mockRepository.getWasteClaimById(claimId) } returns Result.success(TestData.mockWasteClaims[0])
+        Dispatchers.setMain(StandardTestDispatcher())
+        MockKAnnotations.init(this)
+        repository = mockk(relaxed = true)
+
+        coEvery { repository.getWasteClaimById(claimId) } returns Result.success(mockClaim)
+        coEvery { repository.getListingById(listingId) } returns Result.success(mockListing)
+
+        viewModel = TimerViewModel(repository, claimId)
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+        clearAllMocks()
+        unmockkStatic(android.util.Log::class)
     }
 
     @Test
     fun fetchWasteClaimSuccess() = runTest {
+        advanceUntilIdle()
 
-        val viewModel = TimerViewModel(mockRepository, claimId)
-        val wasteClaim = viewModel.wasteClaim.value
-        assertTrue(wasteClaim?.isSuccess == true)
-        assertEquals(TestData.mockWasteClaims[0], wasteClaim?.getOrNull())
-    }
+        clearMocks(repository, answers = false, recordedCalls = true)
 
-    @Test
-    fun onTimerExpiredUpdatesClaimStatus() = runTest {
-        val updatedClaim = TestData.mockWasteClaims[0].copy(claimStatus = "claim")
-        coEvery { mockRepository.updateClaimStatus(claimId, "claim") } returns Result.success(updatedClaim)
+        coEvery { repository.getWasteClaimById(claimId) } returns Result.success(mockClaim)
+        coEvery { repository.getListingById(listingId) } returns Result.success(mockListing)
 
-        val viewModel = TimerViewModel(mockRepository, claimId)
-        viewModel.onTimerExpired()
+        viewModel.refresh()
 
-        assertTrue(viewModel.timerExpired.value)
-        val wasteClaim = viewModel.wasteClaim.value
-        assertTrue(wasteClaim?.isSuccess == true)
-        assertEquals(updatedClaim, wasteClaim?.getOrNull())
+        advanceUntilIdle()
+
+        coVerify(atLeast = 1) { repository.getWasteClaimById(claimId) }
+        coVerify(atLeast = 1) { repository.getListingById(listingId) }
+        assert(viewModel.wasteClaim.value?.isSuccess == true)
+        assert(viewModel.listing.value?.isSuccess == true)
+        assert(viewModel.pickupDeadline.value != null)
     }
 
     @Test
     fun getTimeLeftInSeconds() = runTest {
-        val currentTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
-        val claim = TestData.mockWasteClaims[0].copy(claimTime = currentTime)
-        coEvery { mockRepository.getWasteClaimById(claimId) } returns Result.success(claim)
+        advanceUntilIdle()
 
-        val viewModel = TimerViewModel(mockRepository, claimId)
         val timeLeft = viewModel.getTimeLeftInSeconds()
+        assert(timeLeft > 0)
+    }
 
-        assertTrue(timeLeft > 0)
+    @Test
+    fun onTimerExpiredUpdatesClaimStatus() = runTest {
+        advanceUntilIdle()
+
+        val updatedClaim = mockClaim.copy(claimStatus = "claim")
+        coEvery { repository.updateClaimStatus(claimId, "claim") } returns Result.success(updatedClaim)
+
+        viewModel.onTimerExpired()
+
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { repository.updateClaimStatus(claimId, "claim") }
+        assert(viewModel.timerExpired.value == true)
+        assert(viewModel.wasteClaim.value?.getOrNull()?.claimStatus == "claim")
     }
 }
