@@ -1,6 +1,6 @@
 package com.feedlink.feedlink.screens
 
-import android.util.Log
+import android.content.Context
 import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,8 +15,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -25,21 +28,22 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.koin.androidx.compose.getViewModel
+import androidx.core.content.edit
 import com.feedlink.feedlink.R
-import com.feedlink.feedlink.model.SignUpRequest
 import com.feedlink.feedlink.ui.theme.Green
 import com.feedlink.feedlink.ui.theme.Orange
 import com.feedlink.feedlink.viewmodel.SignupViewModel
+import org.koin.androidx.compose.getViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     userRole: String,
-    onSignUpSuccess: () -> Unit = {},
-    onSignInClick: () -> Unit = {},
+    onNavigateToHome: () -> Unit,
+    onNavigateToRecyclerHome: () -> Unit,
+    onSignInClick: () -> Unit,
 ) {
     val viewModel: SignupViewModel = getViewModel()
+    val context = LocalContext.current
 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -49,9 +53,11 @@ fun SignUpScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+
     val isLoading by viewModel.isLoading
     val errorMessage by viewModel.errorMessage
-    val signUpSuccessResponse by viewModel.SignupSuccess
+    val signupSuccess by viewModel.signupSuccess
+
 
     var isFirstNameError by remember { mutableStateOf(false) }
     var isLastNameError by remember { mutableStateOf(false) }
@@ -59,30 +65,25 @@ fun SignUpScreen(
     var isPasswordError by remember { mutableStateOf(false) }
     var isConfirmPasswordError by remember { mutableStateOf(false) }
 
-    LaunchedEffect(userRole) {
-        Log.d("SignUpScreen", "User role received for this screen: $userRole")
-    }
+    LaunchedEffect(signupSuccess) {
+        signupSuccess?.let { response ->
 
-    LaunchedEffect(signUpSuccessResponse) {
-        if (signUpSuccessResponse != null) {
-            Log.d("SignUpScreen", "Sign up successful (response received), navigating...")
-            onSignUpSuccess()
+            val  signupRole = userRole
+            context.getSharedPreferences("FEEDLINK_PREFS", Context.MODE_PRIVATE).edit {
+                putString("ACCESS_TOKEN", response.token)
+                putString("EMAIL", response.email)
+                putString("USER_ROLE", signupRole)
+            }
+
+            when (response.role) {
+                "buyer" -> onNavigateToHome()
+                    "recycler" -> onNavigateToRecyclerHome()
+                else -> {
+                }
+            }
         }
     }
 
-    fun validateFields(): Boolean {
-        isFirstNameError = firstName.isBlank()
-        isLastNameError = lastName.isBlank()
-        isEmailError = email.isNotBlank() && !Patterns.EMAIL_ADDRESS.matcher(email).matches()
-        isPasswordError = password.isNotBlank() && password.length < 6
-        isConfirmPasswordError = confirmPassword.isNotBlank() && password != confirmPassword
-
-        return firstName.isNotBlank() &&
-                lastName.isNotBlank() &&
-                email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
-                password.isNotBlank() && password.length >= 6 &&
-                confirmPassword.isNotBlank() && password == confirmPassword
-    }
 
     Box(
         modifier = Modifier
@@ -99,137 +100,91 @@ fun SignUpScreen(
             contentScale = ContentScale.FillBounds
         )
 
+
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 150.dp)
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(top = 180.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 22.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .shadow(8.dp, RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
+                    .clip(RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
+                    .background(Color.White)
+                    .padding(horizontal = 22.dp, vertical = 24.dp)
             ) {
-                Spacer(Modifier.height(30.dp))
-
                 Text(
-                    text = "Sign Up",
+                    text = "Sign Up as ${if (userRole == "buyer") "Buyer" else "Recycler"}",
                     color = Orange,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
-                    modifier = Modifier.padding(bottom = 24.dp)
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                        .padding(bottom = 18.dp)
                 )
 
                 Text(
-                    "First Name:",
+                    text = "First Name:",
                     color = Green,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
                     value = firstName,
-                    onValueChange = {
-                        firstName = it; if (it.isNotBlank()) isFirstNameError = false
-                    },
-                    placeholder = {
-                        Text(
-                            "Enter your first name",
-                            fontStyle = FontStyle.Italic,
-                            color = Green.copy(alpha = 0.7f)
-                        )
-                    },
+                    onValueChange = { firstName = it },
+                    placeholder = { Text("Enter first name", fontStyle = FontStyle.Italic) },
                     singleLine = true,
                     isError = isFirstNameError,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFF9800),
-                        unfocusedBorderColor = if (isFirstNameError) MaterialTheme.colorScheme.error else Color(
-                            0xFFFF9800
-                        ).copy(alpha = 0.7f),
-                        cursorColor = Color(0xFF197116)
+                        focusedBorderColor = Orange,
+                        unfocusedBorderColor = Orange,
+                        cursorColor = Green,
+                        errorBorderColor = Color.Red
                     )
                 )
-                if (isFirstNameError) {
-                    Text(
-                        "First name cannot be empty",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp, top = 2.dp)
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
 
                 Text(
-                    "Last Name:",
+                    text = "Last Name:",
                     color = Green,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
                     value = lastName,
-                    onValueChange = { lastName = it; if (it.isNotBlank()) isLastNameError = false },
-                    placeholder = {
-                        Text(
-                            "Enter your last name",
-                            fontStyle = FontStyle.Italic,
-                            color = Green.copy(alpha = 0.7f)
-                        )
-                    },
+                    onValueChange = { lastName = it },
+                    placeholder = { Text("Enter last name", fontStyle = FontStyle.Italic) },
                     singleLine = true,
                     isError = isLastNameError,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFF9800),
-                        unfocusedBorderColor = if (isLastNameError) MaterialTheme.colorScheme.error else Color(
-                            0xFFFF9800
-                        ).copy(alpha = 0.7f),
-                        cursorColor = Color(0xFF197116)
+                        focusedBorderColor = Orange,
+                        unfocusedBorderColor = Orange,
+                        cursorColor = Green,
+                        errorBorderColor = Color.Red
                     )
                 )
-                if (isLastNameError) {
-                    Text(
-                        "Last name cannot be empty",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp, top = 2.dp)
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
 
                 Text(
-                    "Email:",
+                    text = "Email:",
                     color = Green,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
                     value = email,
-                    onValueChange = {
-                        email = it; if (it.isNotBlank()) isEmailError =
-                        !Patterns.EMAIL_ADDRESS.matcher(it).matches() else isEmailError = false
-                    },
-                    placeholder = {
-                        Text(
-                            "user@example.com",
-                            fontStyle = FontStyle.Italic,
-                            color = Color(0xFF197116).copy(alpha = 0.7f)
-                        )
-                    },
+                    onValueChange = { email = it },
+                    placeholder = { Text("Enter email", fontStyle = FontStyle.Italic) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     isError = isEmailError,
@@ -237,46 +192,24 @@ fun SignUpScreen(
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Orange,
-                        unfocusedBorderColor = if (isEmailError) MaterialTheme.colorScheme.error else Color(
-                            0xFFFF9800
-                        ).copy(alpha = 0.7f),
-                        cursorColor = Color(0xFF197116)
+                        unfocusedBorderColor = Orange,
+                        cursorColor = Green,
+                        errorBorderColor = Color.Red
                     )
                 )
-                if (isEmailError) {
-                    Text(
-                        "Enter a valid email address",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp, top = 2.dp)
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
 
                 Text(
-                    "Password:",
+                    text = "Password:",
                     color = Green,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
                     value = password,
-                    onValueChange = {
-                        password = it; if (it.isNotBlank()) isPasswordError =
-                        it.length < 6 else isPasswordError = false
-                    },
-                    placeholder = {
-                        Text(
-                            "Enter password",
-                            fontStyle = FontStyle.Italic,
-                            color = Green.copy(alpha = 0.7f)
-                        )
-                    },
+                    onValueChange = { password = it },
+                    placeholder = { Text("Enter password", fontStyle = FontStyle.Italic) },
                     singleLine = true,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -292,46 +225,24 @@ fun SignUpScreen(
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Orange,
-                        unfocusedBorderColor = if (isPasswordError) MaterialTheme.colorScheme.error else Color(
-                            0xFFFF9800
-                        ).copy(alpha = 0.7f),
-                        cursorColor = Color(0xFF197116)
+                        unfocusedBorderColor = Orange,
+                        cursorColor = Green,
+                        errorBorderColor = Color.Red
                     )
                 )
-                if (isPasswordError) {
-                    Text(
-                        "Password must be at least 6 characters",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp, top = 2.dp)
-                    )
-                }
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(12.dp))
 
                 Text(
-                    "Confirm Password:",
+                    text = "Confirm Password:",
                     color = Green,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
                 OutlinedTextField(
                     value = confirmPassword,
-                    onValueChange = {
-                        confirmPassword = it; if (it.isNotBlank()) isConfirmPasswordError =
-                        password != it else isConfirmPasswordError = false
-                    },
-                    placeholder = {
-                        Text(
-                            "Re-enter password",
-                            fontStyle = FontStyle.Italic,
-                            color = Green.copy(alpha = 0.7f)
-                        )
-                    },
+                    onValueChange = { confirmPassword = it },
+                    placeholder = { Text("Confirm password", fontStyle = FontStyle.Italic) },
                     singleLine = true,
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -347,53 +258,49 @@ fun SignUpScreen(
                     shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Orange,
-                        unfocusedBorderColor = if (isConfirmPasswordError) MaterialTheme.colorScheme.error else Color(
-                            0xFFFF9800
-                        ).copy(alpha = 0.7f),
-                        cursorColor = Color(0xFF197116)
+                        unfocusedBorderColor = Orange,
+                        cursorColor = Green,
+                        errorBorderColor = Color.Red
                     )
                 )
-                if (isConfirmPasswordError) {
+
+                errorMessage?.takeIf { it.isNotBlank() }?.let { errorMsg ->
                     Text(
-                        "Passwords do not match",
+                        text = errorMsg,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp, top = 2.dp)
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                Spacer(Modifier.height(20.dp))
 
-                if (errorMessage != null && errorMessage!!.isNotEmpty()) {
-                    Text(
-                        text = errorMessage!!,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
+                Spacer(Modifier.height(18.dp))
 
                 Button(
                     onClick = {
-                        Log.d("SignUpScreen", "Create Account button clicked.")
-                        val formIsValid = validateFields()
+                        val isFirstNameValid = firstName.isNotBlank()
+                        val isLastNameValid = lastName.isNotBlank()
+                        val isEmailValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                        val isPasswordValid = password.length >= 6
+                        val isConfirmPasswordValid = confirmPassword == password
 
-                        if (formIsValid) {
-                            Log.d(
-                                "SignUpScreen",
-                                "Fields are valid. Calling viewModel.signup with role: $userRole"
+
+                        isFirstNameError = !isFirstNameValid
+                        isLastNameError = !isLastNameValid
+                        isEmailError = !isEmailValid
+                        isPasswordError = !isPasswordValid
+                        isConfirmPasswordError = !isConfirmPasswordValid
+
+
+                        if (isFirstNameValid && isLastNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
+                            viewModel.signup(
+                                com.feedlink.feedlink.model.SignUpRequest(
+                                    email = email,
+                                    password = password,
+                                    firstName = firstName,
+                                    lastName = lastName,
+                                    role = userRole
+                                )
                             )
-                            val request = SignUpRequest(
-                                email = email.trim(),
-                                password = password,
-                                firstName = firstName.trim(),
-                                lastName = lastName.trim(),
-                                role = userRole
-                            )
-                            viewModel.signup(request)
-                        } else {
-                            Log.d("SignUpScreen", "Fields are invalid. Not calling signup.")
                         }
                     },
                     modifier = Modifier
@@ -411,7 +318,7 @@ fun SignUpScreen(
                         )
                     } else {
                         Text(
-                            "Create account",
+                            text = "Sign Up",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = Color.White
@@ -422,21 +329,26 @@ fun SignUpScreen(
                 Spacer(Modifier.height(16.dp))
 
                 Row(
-                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Already have an account? ", color = Color.Black, fontSize = 15.sp)
+                    Text(
+                        text = "Already have an account? ",
+                        color = Color.Black,
+                        fontSize = 15.sp
+                    )
                     Text(
                         text = "Sign In",
                         color = Orange,
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
-                        modifier = Modifier.clickable { if (!isLoading) onSignInClick() }
+                        modifier = Modifier.clickable { onSignInClick() }
                     )
                 }
-                Spacer(Modifier.height(30.dp))
             }
         }
     }
 }
+
+
+

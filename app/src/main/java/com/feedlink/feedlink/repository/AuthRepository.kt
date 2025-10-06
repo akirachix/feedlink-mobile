@@ -18,7 +18,6 @@ class AuthRepository(
     private val apiInterface: ApiInterface
 ) {
 
-
     suspend fun signup(request: SignUpRequest): Result<SignUpResponse> {
         return try {
             val response: Response<SignUpResponse> = withContext(Dispatchers.IO) {

@@ -1,3 +1,4 @@
+
 package com.feedlink.feedlink.model
 
 import com.google.gson.annotations.SerializedName
@@ -21,4 +22,4 @@ data class Listing(
     val unit: String,
     val producer: Int,
 
-)
+    )
