@@ -26,6 +26,17 @@ android {
                 "proguard-rules.pro"
             )
         }
+        packaging {
+            resources {
+                excludes += setOf(
+                    "META-INF/LICENSE-notice.md",
+                    "META-INF/LICENSE.md",
+                    "META-INF/NOTICE.md",
+                    "META-INF/ASL2.0",
+                    "META-INF/LGPL2.1"
+                )
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -85,13 +96,16 @@ dependencies {
     implementation("io.insert-koin:koin-android:3.5.0")
     implementation("io.insert-koin:koin-androidx-compose:3.5.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.16")
-
-
-
     implementation("io.ktor:ktor-client-okhttp:2.3.10")
     implementation("io.ktor:ktor-client-content-negotiation:2.3.10")
     implementation("io.ktor:ktor-serialization-gson:2.3.10")
-
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("io.mockk:mockk-android:1.13.8")
+    testImplementation(kotlin("test"))
 
 
 

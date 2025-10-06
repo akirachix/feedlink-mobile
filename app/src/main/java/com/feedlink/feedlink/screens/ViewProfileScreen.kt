@@ -34,10 +34,11 @@ import org.koin.androidx.compose.getViewModel
 @Composable
 fun ViewProfileScreen(
     onNavigateToEdit: (Int) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    viewModel: ProfileViewModel = getViewModel()
 ) {
     val context = LocalContext.current
-    val viewModel: ProfileViewModel = getViewModel()
+
 
     val userProfile by viewModel.userProfile.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
