@@ -9,7 +9,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
+
 
 val appModule = module {
     single { AuthInterceptor() }
@@ -22,8 +22,7 @@ val appModule = module {
         OkHttpClient.Builder()
             .addInterceptor(get<HttpLoggingInterceptor>())
             .addInterceptor(get<AuthInterceptor>())
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+
             .build()
     }
     single {
