@@ -65,9 +65,6 @@ class TimerViewModel(
                     set(Calendar.MINUTE, 0)
                     set(Calendar.SECOND, 0)
                     set(Calendar.MILLISECOND, 0)
-                    if (before(claimCalendar)) {
-                        add(Calendar.DAY_OF_MONTH, 1)
-                    }
                 }
 
                 _pickupDeadline.value = pickupCalendar.time
