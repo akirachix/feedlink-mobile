@@ -1,10 +1,12 @@
-package com.feedlink.feedlink.viewModel
+package com.feedlink.feedlink.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.feedlink.feedlink.model.WasteClaim
 import com.feedlink.feedlink.repository.WasteClaimRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,7 +18,8 @@ sealed class WasteClaimUiState {
 }
 
 class WasteClaimViewModel(
-    private val repository: WasteClaimRepository
+    private val repository: WasteClaimRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<WasteClaimUiState>(WasteClaimUiState.Loading)
@@ -27,7 +30,7 @@ class WasteClaimViewModel(
     }
 
     fun fetchAllWasteClaims() {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             _uiState.value = WasteClaimUiState.Loading
             try {
                 val result = repository.getWasteClaims()

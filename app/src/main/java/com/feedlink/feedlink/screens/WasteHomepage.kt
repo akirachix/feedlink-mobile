@@ -45,8 +45,8 @@ import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import com.feedlink.feedlink.model.Listing
 import com.feedlink.feedlink.utils.NotificationManager
-import com.feedlink.feedlink.viewModel.ListingUiState
-import com.feedlink.feedlink.viewModel.ListingViewModel
+import com.feedlink.feedlink.viewmodel.ListingUiState
+import com.feedlink.feedlink.viewmodel.ListingViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WasteHomepage(modifier: Modifier = Modifier) {
+fun RecyclerHome(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val viewModel: ListingViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -82,7 +82,6 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
                 "New inedible waste items are available for claim."
             )
         }
-
         viewModel.resetNewListingFlag()
     }
 
@@ -120,7 +119,7 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
         is ListingUiState.Success -> {
             currentState.listings.filter { listing ->
                 searchQuery.isEmpty() ||
-                        listing.category?.contains(searchQuery, ignoreCase = true) == true
+                        (listing.category?.contains(searchQuery, ignoreCase = true) == true)
             }
         }
         else -> emptyList()
@@ -132,9 +131,7 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
             title = { Text("Claim Successful") },
             text = { Text("You have successfully claimed this waste item. Please check your email for the pickup PIN.") },
             confirmButton = {
-                Button(
-                    onClick = { viewModel.dismissClaimSuccessDialog() }
-                ) {
+                Button(onClick = { viewModel.dismissClaimSuccessDialog() }) {
                     Text("OK")
                 }
             }
@@ -206,9 +203,7 @@ fun WasteHomepage(modifier: Modifier = Modifier) {
                     singleLine = true,
                     shape = RoundedCornerShape(8.dp),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(
-                        onSearch = { }
-                    )
+                    keyboardActions = KeyboardActions(onSearch = {})
                 )
             }
         }
@@ -352,7 +347,7 @@ fun ListingItem(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
-                model = listing.imageUrl ?: listing.placeholderImageUrl,
+                model = listing.image ?: listing.imageUrl,
                 contentDescription = "Waste image",
                 modifier = Modifier
                     .fillMaxWidth()
@@ -459,7 +454,7 @@ fun ListingDetailsPopup(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 AsyncImage(
-                    model = listing.imageUrl ?: listing.placeholderImageUrl,
+                    model = listing.image ?: listing.imageUrl,
                     contentDescription = "Waste image",
                     modifier = Modifier
                         .fillMaxWidth()
@@ -469,17 +464,13 @@ fun ListingDetailsPopup(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                DetailRow(label = "Product Type", value = listing.productType ?: "Unknown")
-                DetailRow(label = "Category", value = listing.category?.replaceFirstChar { it.uppercase() } ?: "Unknown")
-                DetailRow(label = "Description", value = listing.description ?: "No description")
+                DetailRow(label = "Product Type", value = listing.productType?.replaceFirstChar { it.uppercase() })
+                DetailRow(label = "Category", value = listing.category?.replaceFirstChar { it.uppercase() })
+                DetailRow(label = "Description", value = listing.description)
                 DetailRow(label = "Quantity", value = "${listing.quantity ?: "0"} ${listing.unit ?: "units"}")
 
-                listing.originalPrice?.let {
-                    DetailRow(label = "Original Price", value = it)
-                }
-                listing.discountedPrice?.let {
-                    DetailRow(label = "Discounted Price", value = it)
-                }
+                DetailRow(label = "Original Price", value = listing.originalPrice.toString())
+                DetailRow(label = "Discounted Price", value = listing.discountedPrice.toString())
 
                 listing.expiryDate?.let {
                     DetailRow(label = "Expiry Date", value = formatDateTime(it))
@@ -515,7 +506,7 @@ fun ListingDetailsPopup(
 @Composable
 fun DetailRow(
     label: String,
-    value: String,
+    value: String?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -530,16 +521,14 @@ fun DetailRow(
             color = Color.Gray
         )
         Text(
-            text = value,
+            text = value ?: "—",
             fontSize = 16.sp,
             color = Color.Black
         )
     }
 }
 
-private fun formatDateTime(dateString: String?): String {
-    if (dateString == null) return "Unknown"
-
+private fun formatDateTime(dateString: String): String {
     return try {
         val formats = listOf(
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()),
@@ -548,11 +537,11 @@ private fun formatDateTime(dateString: String?): String {
 
         for (format in formats) {
             try {
-                val date = format.parse(dateString)
+                val date = format.parse(dateString) ?: continue
                 val now = Date()
                 val diff = now.time - date.time
 
-                val outputFormat = when {
+                return when {
                     diff < TimeUnit.MINUTES.toMillis(1) -> "Just now"
                     diff < TimeUnit.HOURS.toMillis(1) -> "${TimeUnit.MILLISECONDS.toMinutes(diff)} minutes ago"
                     diff < TimeUnit.DAYS.toMillis(1) -> "${TimeUnit.MILLISECONDS.toHours(diff)} hours ago"
@@ -562,36 +551,12 @@ private fun formatDateTime(dateString: String?): String {
                         dateFormat.format(date)
                     }
                 }
-
-                return outputFormat
             } catch (e: Exception) {
-                Log.e("WasteHomepage", "Error formatting date: $dateString", e)
             }
         }
-
         dateString
     } catch (e: Exception) {
-        Log.e("WasteHomepage", "Error formatting date: $dateString", e)
+        Log.e("RecyclerHome", "Error formatting date: $dateString", e)
         dateString
-    }
-}
-
-private fun formatDuration(durationString: String?): String {
-    if (durationString == null) return "Unknown"
-
-    return try {
-        val hours = durationString.toIntOrNull()
-        if (hours != null) {
-            return when {
-                hours < 24 -> "$hours hours"
-                hours % 24 == 0 -> "${hours / 24} days"
-                else -> "${hours / 24} days and ${hours % 24} hours"
-            }
-        }
-
-        durationString
-    } catch (e: Exception) {
-        Log.e("WasteHomepage", "Error formatting duration: $durationString", e)
-        durationString
     }
 }

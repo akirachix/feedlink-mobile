@@ -29,8 +29,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.repository.WasteClaimRepository
-import com.feedlink.feedlink.ui.theme.Typography
-import com.feedlink.feedlink.viewModel.TimerViewModel
+import com.feedlink.feedlink.viewmodel.TimerViewModel
 import kotlinx.coroutines.delay
 import org.koin.core.context.GlobalContext
 import kotlin.math.min
@@ -49,10 +48,10 @@ fun TimerScreen(
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Invalid claim ID")
+                Text("Invalid claim ID", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onBackClick) {
-                    Text("Go Back")
+                    Text("Go Back", style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
@@ -127,9 +126,10 @@ fun TimerScreen(
 
             Text(
                 text = "Timer",
-                fontWeight = FontWeight.Bold,
-                fontSize = 28.sp,
-                color = Color(0xFFFF9800),
+                style = MaterialTheme.typography.displayMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFF9800)
+                ),
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 80.dp)
@@ -149,11 +149,12 @@ fun TimerScreen(
                     CircularProgressIndicator()
                     Text(
                         text = "Loading claim details...",
+                        style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
                 wasteClaimState?.isSuccess == true -> {
-                    val claim = wasteClaimState?.getOrNull()!!
+                    val claim = wasteClaimState!!.getOrNull()!!
 
                     val wasteDetails = "Claim ID: ${claim.wasteId}\n" +
                             "Status: ${claim.claimStatus}\n" +
@@ -161,7 +162,7 @@ fun TimerScreen(
 
                     Text(
                         text = wasteDetails,
-                        style = Typography.bodyMedium.copy(
+                        style = MaterialTheme.typography.bodyMedium.copy(
                             color = Color.Black,
                             fontWeight = FontWeight.Bold
                         ),
@@ -171,7 +172,7 @@ fun TimerScreen(
                     pickupDeadline?.let { deadline ->
                         Text(
                             text = "Pickup deadline: ${formatDeadline(deadline)}",
-                            style = Typography.bodySmall.copy(
+                            style = MaterialTheme.typography.bodySmall.copy(
                                 color = if (isOverdue) Color.Red else Color.Gray
                             ),
                             modifier = Modifier.padding(bottom = 12.dp)
@@ -217,7 +218,7 @@ fun TimerScreen(
 
                         Text(
                             text = if (isOverdue) "00:00" else if (timerExpired) "00:00" else formatTime(timeLeft),
-                            style = Typography.headlineMedium.copy(
+                            style = MaterialTheme.typography.headlineMedium.copy(
                                 color = if (timerExpired || isOverdue) Color.Gray else Color(0xFF4CAF50),
                                 fontWeight = FontWeight.Bold
                             )
@@ -230,7 +231,7 @@ fun TimerScreen(
                             text = "Pickup overdue!",
                             color = Color.Red,
                             fontWeight = FontWeight.Bold,
-                            style = Typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     } else if (timerExpired) {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -238,7 +239,7 @@ fun TimerScreen(
                             text = "Time expired! Waste is now available for claiming.",
                             color = Color(0xFF4CAF50),
                             fontWeight = FontWeight.Bold,
-                            style = Typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
@@ -247,16 +248,16 @@ fun TimerScreen(
                     Text(
                         text = "Error loading claim",
                         color = Color.Red,
-                        style = Typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
                         text = exception.message ?: "Unknown error",
                         color = Color.Gray,
-                        style = Typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.fetchWasteClaim() }) {
-                        Text("Retry")
+                        Text("Retry", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }

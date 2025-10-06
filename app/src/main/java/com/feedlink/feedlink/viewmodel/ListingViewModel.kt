@@ -1,4 +1,4 @@
-package com.feedlink.feedlink.viewModel
+package com.feedlink.feedlink.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -7,6 +7,8 @@ import com.feedlink.feedlink.model.Listing
 import com.feedlink.feedlink.model.WasteClaim
 import com.feedlink.feedlink.repository.ListingRepository
 import com.feedlink.feedlink.repository.WasteClaimRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +24,8 @@ sealed class ListingUiState {
 
 class ListingViewModel(
     private val repository: ListingRepository,
-    private val wasteClaimRepository: WasteClaimRepository
+    private val wasteClaimRepository: WasteClaimRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ListingUiState>(ListingUiState.Loading)
@@ -49,7 +52,7 @@ class ListingViewModel(
     }
 
     fun fetchInedibleListings() {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             _uiState.value = ListingUiState.Loading
             try {
                 val listingsResult = repository.getAvailableListings()
@@ -104,7 +107,7 @@ class ListingViewModel(
     }
 
     fun refreshListings() {
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             _isRefreshing.value = true
             _newListingDetected.value = false
             fetchInedibleListings()
@@ -119,7 +122,7 @@ class ListingViewModel(
     fun claimListing(listingId: Int?) {
         if (listingId == null) return
 
-        viewModelScope.launch {
+        viewModelScope.launch(ioDispatcher) {
             try {
                 val listing = when (val state = _uiState.value) {
                     is ListingUiState.Success -> state.listings.find { it.listingId == listingId }

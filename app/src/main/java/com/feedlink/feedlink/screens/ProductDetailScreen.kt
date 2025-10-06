@@ -1,4 +1,3 @@
-
 package com.feedlink.feedlink.screens
 
 import androidx.compose.foundation.background
@@ -155,9 +154,12 @@ fun ProductDetailContent(
     onAddToCart: () -> Unit
 ) {
     var isAddingToCart by remember { mutableStateOf(false) }
-    val imageUrl = remember(product) {
-        product.imageUrl ?: R.drawable.africanladyprofile
+
+    val resolvedImageUrl = when {
+        !product.image.isNullOrBlank() -> product.image.trim()
+        else -> null
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -166,7 +168,7 @@ fun ProductDetailContent(
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUrl)
+                .data(resolvedImageUrl ?: R.drawable.africanladyprofile)
                 .crossfade(true)
                 .error(R.drawable.africanladyprofile)
                 .placeholder(R.drawable.africanladyprofile)
@@ -182,7 +184,7 @@ fun ProductDetailContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Price: ${product.discountedPrice ?: "N/A"} Ksh",
+            text = "Price: ${product.discountedPrice} Ksh",
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
             color = Color(0xFF2E4E1E)
@@ -191,10 +193,9 @@ fun ProductDetailContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Expiry Date: ${product.expiryDate ?: "N/A"}",
+            text = "Expiry Date: ${product.expiryDate?.substringBefore('T') ?: "N/A"}",
             fontSize = 14.sp,
             color = Color.Gray,
-            style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold
         )
 

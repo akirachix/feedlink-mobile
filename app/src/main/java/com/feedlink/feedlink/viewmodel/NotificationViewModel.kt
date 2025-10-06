@@ -1,4 +1,4 @@
-package com.feedlink.feedlink.viewModel
+package com.feedlink.feedlink.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

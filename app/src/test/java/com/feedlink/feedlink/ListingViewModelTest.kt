@@ -1,11 +1,17 @@
 package com.feedlink.feedlink.viewModel
 
+import android.util.Log
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.feedlink.feedlink.TestData
+import com.feedlink.feedlink.model.WasteClaim
 import com.feedlink.feedlink.repository.ListingRepository
 import com.feedlink.feedlink.repository.WasteClaimRepository
+import com.feedlink.feedlink.viewmodel.ListingUiState
+import com.feedlink.feedlink.viewmodel.ListingViewModel
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -22,6 +28,7 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ListingViewModelTest {
+
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -32,10 +39,23 @@ class ListingViewModelTest {
 
     @Before
     fun setup() {
+        mockkStatic(Log::class)
+        every { Log.e(any<String>(), any<String>()) } returns 0
+        every { Log.e(any<String>(), any<String>(), any()) } returns 0
+        every { Log.d(any<String>(), any<String>()) } returns 0
+        every { Log.i(any<String>(), any<String>()) } returns 0
+        every { Log.w(any<String>(), any<String>()) } returns 0
+        every { Log.v(any<String>(), any<String>()) } returns 0
+
         Dispatchers.setMain(testDispatcher)
+
         mockListingRepository = mockk()
         mockWasteClaimRepository = mockk()
-        viewModel = ListingViewModel(mockListingRepository, mockWasteClaimRepository)
+
+        coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
+        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
+
+        viewModel = ListingViewModel(mockListingRepository, mockWasteClaimRepository, testDispatcher)
     }
 
     @After
@@ -44,9 +64,17 @@ class ListingViewModelTest {
     }
 
     @Test
-    fun fetchInedibleListingsSuccess() = runTest {
+    fun `init should load listings successfully`() = runTest {
+        val uiState = viewModel.uiState.value
+        assertTrue(uiState is ListingUiState.Success)
+        val successState = uiState as ListingUiState.Success
+        assertEquals(2, successState.listings.size)
+    }
+
+    @Test
+    fun `fetchInedibleListingsSuccess should update uiState to Success`() = runTest {
         coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
-        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(TestData.mockWasteClaims)
+        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
         viewModel.fetchInedibleListings()
 
@@ -57,10 +85,10 @@ class ListingViewModelTest {
     }
 
     @Test
-    fun fetchInedibleListingsFailure() = runTest {
+    fun `fetchInedibleListingsFailure should update uiState to Error`() = runTest {
         val exception = RuntimeException("Network error")
         coEvery { mockListingRepository.getAvailableListings() } returns Result.failure(exception)
-        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(TestData.mockWasteClaims)
+        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
         viewModel.fetchInedibleListings()
 
@@ -71,11 +99,11 @@ class ListingViewModelTest {
     }
 
     @Test
-    fun claimListingSuccess() = runTest {
+    fun `claimListingSuccess should update claimedListings and show dialog`() = runTest {
         val listingId = 1
-        coEvery { mockWasteClaimRepository.addWasteClaim(any()) } returns Result.success(TestData.mockWasteClaims[0])
+        coEvery { mockWasteClaimRepository.addWasteClaim(any<WasteClaim>()) } returns Result.success(TestData.mockWasteClaims[0])
         coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
-        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(TestData.mockWasteClaims)
+        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
         viewModel.claimListing(listingId)
 
@@ -84,11 +112,11 @@ class ListingViewModelTest {
     }
 
     @Test
-    fun dismissClaimSuccessDialog() = runTest {
+    fun `dismissClaimSuccessDialog should hide the dialog`() = runTest {
         val listingId = 1
-        coEvery { mockWasteClaimRepository.addWasteClaim(any()) } returns Result.success(TestData.mockWasteClaims[0])
+        coEvery { mockWasteClaimRepository.addWasteClaim(any<WasteClaim>()) } returns Result.success(TestData.mockWasteClaims[0])
         coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
-        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(TestData.mockWasteClaims)
+        coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
         viewModel.claimListing(listingId)
         assertTrue(viewModel.showClaimSuccessDialog.value)
@@ -99,7 +127,7 @@ class ListingViewModelTest {
     }
 
     @Test
-    fun updateSearchQuery() = runTest {
+    fun `updateSearchQuery should update searchQuery state`() = runTest {
         val query = "Fruits"
 
         viewModel.updateSearchQuery(query)

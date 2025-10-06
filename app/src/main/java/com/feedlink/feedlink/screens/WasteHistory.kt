@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.model.WasteClaim
-import com.feedlink.feedlink.viewModel.WasteClaimUiState
-import com.feedlink.feedlink.viewModel.WasteClaimViewModel
+import com.feedlink.feedlink.viewmodel.WasteClaimUiState
+import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*

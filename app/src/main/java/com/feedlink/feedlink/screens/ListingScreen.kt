@@ -174,7 +174,7 @@ fun ListingCard(listing: Listing, onProductClick: (Int) -> Unit, modifier: Modif
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(listing.imageUrl ?: R.drawable.africanladyprofile)
+                    .data(listing.image?.trim() ?: R.drawable.africanladyprofile)
                     .crossfade(true)
                     .error(R.drawable.africanladyprofile)
                     .placeholder(R.drawable.africanladyprofile)
@@ -264,7 +264,6 @@ fun CategoryRow(onCategorySelected: (String?) -> Unit) {
         }
     }
 }
-
 @Composable
 fun ForYouSection(listings: List<Listing>, onProductClick: (Int) -> Unit) {
     val forYouListings = listings.take(4)

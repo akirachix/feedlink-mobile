@@ -1,6 +1,4 @@
 package com.feedlink.feedlink.api
-
-<<<<<<< HEAD
 import com.feedlink.feedlink.model.Listing
 import com.feedlink.feedlink.model.StatusRequest
 import com.feedlink.feedlink.model.WasteClaim
@@ -9,6 +7,9 @@ import retrofit2.http.POST
 import retrofit2.http.Body
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import com.feedlink.feedlink.model.*
+import retrofit2.Response
+import retrofit2.http.*
 
 interface ApiInterface {
         @GET("listings/")
@@ -28,12 +29,6 @@ interface ApiInterface {
                 @Path("id") claimId: Int,
                 @Body statusRequest: StatusRequest
         ): WasteClaim
-=======
-import com.feedlink.feedlink.model.*
-import retrofit2.Response
-import retrofit2.http.*
-
-interface ApiInterface {
 
     @GET("listings/")
     suspend fun fetchListings(
@@ -60,5 +55,5 @@ interface ApiInterface {
 
     @POST("verification/")
     suspend fun verification(@Body request: VerificationRequest): Response<VerificationResponse>
->>>>>>> 93200a6b2ef82ae4c36044f694a6b170c8be4d57
+
 }

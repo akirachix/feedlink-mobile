@@ -3,6 +3,7 @@ package com.feedlink.feedlink.viewModel
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.feedlink.feedlink.TestData
 import com.feedlink.feedlink.repository.WasteClaimRepository
+import com.feedlink.feedlink.viewmodel.TimerViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers

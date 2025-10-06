@@ -1,4 +1,4 @@
-package com.feedlink.feedlink.viewModel
+package com.feedlink.feedlink.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class TimerViewModel(
     private val repository: WasteClaimRepository,

@@ -2,6 +2,8 @@ package com.feedlink.feedlink.viewModel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.feedlink.feedlink.TestData
+import com.feedlink.feedlink.viewmodel.NotificationUiState
+import com.feedlink.feedlink.viewmodel.NotificationViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

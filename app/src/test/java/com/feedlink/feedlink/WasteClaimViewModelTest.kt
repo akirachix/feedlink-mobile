@@ -1,10 +1,15 @@
 package com.feedlink.feedlink.viewModel
 
+import android.util.Log
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.feedlink.feedlink.TestData
 import com.feedlink.feedlink.repository.WasteClaimRepository
+import com.feedlink.feedlink.viewmodel.WasteClaimUiState
+import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -29,9 +34,19 @@ class WasteClaimViewModelTest {
 
     @Before
     fun setup() {
+        mockkStatic(Log::class)
+        every { Log.e(any<String>(), any<String>()) } returns 0
+        every { Log.e(any<String>(), any<String>(), any()) } returns 0
+        every { Log.d(any<String>(), any<String>()) } returns 0
+        every { Log.i(any<String>(), any<String>()) } returns 0
+        every { Log.w(any<String>(), any<String>()) } returns 0
+        every { Log.v(any<String>(), any<String>()) } returns 0
+
         Dispatchers.setMain(testDispatcher)
         mockRepository = mockk()
-        viewModel = WasteClaimViewModel(mockRepository)
+        coEvery { mockRepository.getWasteClaims() } returns Result.success(TestData.mockWasteClaims)
+
+        viewModel = WasteClaimViewModel(mockRepository, testDispatcher)
     }
 
     @After

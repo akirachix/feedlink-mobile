@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.model.Notification
-import com.feedlink.feedlink.viewModel.NotificationUiState
-import com.feedlink.feedlink.viewModel.NotificationViewModel
+import com.feedlink.feedlink.viewmodel.NotificationUiState
+import com.feedlink.feedlink.viewmodel.NotificationViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*

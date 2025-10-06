@@ -16,14 +16,18 @@ object TestData {
             category = "Fruits",
             description = "Overripe bananas",
             quantity = "5",
-            originalPrice = "$2.00",
+            originalPrice = 2.0f,
+            discountedPrice = 0.5f,
             expiryDate = "2023-12-31",
-            discountedPrice = "$0.50",
+            image = null,
             imageUrl = "https://example.com/bananas.jpg",
             status = "available",
             createdAt = "2023-11-15T10:30:00",
             updatedAt = "2023-11-15T10:30:00",
-            unit = "kg"
+            uploadMethod = "manual",
+            pickupWindowDuration = "60",
+            unit = "kg",
+            producer = 101
         ),
         Listing(
             listingId = 2,
@@ -31,14 +35,18 @@ object TestData {
             category = "Vegetables",
             description = "Wilted lettuce",
             quantity = "3",
-            originalPrice = "$1.50",
+            originalPrice = 1.5f,
+            discountedPrice = 0.3f,
             expiryDate = "2023-12-20",
-            discountedPrice = "$0.30",
+            image = null,
             imageUrl = "https://example.com/lettuce.jpg",
             status = "available",
             createdAt = "2023-11-16T14:45:00",
             updatedAt = "2023-11-16T14:45:00",
-            unit = "pieces"
+            uploadMethod = "api",
+            pickupWindowDuration = "30",
+            unit = "pieces",
+            producer = 102
         )
     )
 
