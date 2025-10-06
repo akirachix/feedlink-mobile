@@ -22,15 +22,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.feedlink.feedlink.R
-import com.feedlink.feedlink.repository.WasteClaimRepository
 import com.feedlink.feedlink.utils.DateUtils
 import com.feedlink.feedlink.viewmodel.TimerViewModel
 import kotlinx.coroutines.delay
-import org.koin.core.context.GlobalContext
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,8 +52,9 @@ fun TimerScreen(
         return
     }
 
-    val viewModel: TimerViewModel = viewModel(
-        factory = TimerViewModelFactory(claimId)
+    val viewModel: TimerViewModel = koinViewModel(
+        key = "timer_vm_$claimId",
+        parameters = { parametersOf(claimId) }
     )
 
     val wasteClaimState by viewModel.wasteClaim.collectAsState()
@@ -253,25 +251,12 @@ fun TimerScreen(
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.fetchWasteClaim() }) {
+                    Button(onClick = { viewModel.refresh() }) {
                         Text("Retry", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
         }
-    }
-}
-
-class TimerViewModelFactory(
-    private val claimId: Int
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TimerViewModel::class.java)) {
-            val repository = GlobalContext.get().get<WasteClaimRepository>()
-            @Suppress("UNCHECKED_CAST")
-            return TimerViewModel(repository, claimId) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 

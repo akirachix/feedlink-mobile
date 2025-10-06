@@ -3,7 +3,6 @@ package com.feedlink.feedlink.di
 import com.feedlink.feedlink.api.ApiInterface
 import com.feedlink.feedlink.repository.ListingRepository
 import com.feedlink.feedlink.repository.WasteClaimRepository
-import com.feedlink.feedlink.screens.TimerViewModelFactory
 import com.feedlink.feedlink.viewmodel.NotificationViewModel
 import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import com.feedlink.feedlink.repository.AuthRepository
@@ -14,6 +13,7 @@ import com.feedlink.feedlink.viewmodel.ListingsViewModel
 import com.feedlink.feedlink.viewmodel.ProductDetailViewModel
 import com.feedlink.feedlink.viewmodel.SigninViewModel
 import com.feedlink.feedlink.viewmodel.SignupViewModel
+import com.feedlink.feedlink.viewmodel.TimerViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -69,7 +69,8 @@ val viewModelModule = module {
     viewModel { WasteClaimViewModel(get()) }
     viewModel { ListingViewModel(get(), get()) }
     viewModel { NotificationViewModel() }
-    factory { (claimId: Int) -> TimerViewModelFactory(claimId) }
+    viewModel { (claimId: Int) -> TimerViewModel(get(), claimId) }
+
 
 }
 

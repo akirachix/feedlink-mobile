@@ -55,5 +55,7 @@ interface ApiInterface {
 
     @POST("verification/")
     suspend fun verification(@Body request: VerificationRequest): Response<VerificationResponse>
-
+    @GET("listings/{id}")
+    suspend fun getListingById(@Path("id") listingId: Int): Listing
 }
+

@@ -3,16 +3,15 @@ package com.feedlink.feedlink.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.feedlink.feedlink.model.Listing
 import com.feedlink.feedlink.model.WasteClaim
 import com.feedlink.feedlink.repository.WasteClaimRepository
+import com.feedlink.feedlink.utils.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 class TimerViewModel(
     private val repository: WasteClaimRepository,
@@ -20,6 +19,9 @@ class TimerViewModel(
 ) : ViewModel() {
     private val _wasteClaim = MutableStateFlow<Result<WasteClaim>?>(null)
     val wasteClaim: StateFlow<Result<WasteClaim>?> = _wasteClaim.asStateFlow()
+
+    private val _listing = MutableStateFlow<Result<Listing>?>(null)
+    val listing: StateFlow<Result<Listing>?> = _listing.asStateFlow()
 
     private val _timerExpired = MutableStateFlow(false)
     val timerExpired: StateFlow<Boolean> = _timerExpired.asStateFlow()
@@ -34,46 +36,51 @@ class TimerViewModel(
     val totalTimeInSeconds: StateFlow<Int> = _totalTimeInSeconds.asStateFlow()
 
     init {
-        fetchWasteClaim()
+        fetchWasteClaimAndListing()
     }
 
-    fun fetchWasteClaim() {
+    private fun fetchWasteClaimAndListing() {
         viewModelScope.launch {
-            _wasteClaim.value = repository.getWasteClaimById(claimId)
-            val result = _wasteClaim.value
-            if (result?.isSuccess == true) {
-                val claim = result.getOrNull()
-                if (claim != null) {
-                    calculatePickupDeadline(claim)
-                    checkIfOverdue()
+            val claimResult = repository.getWasteClaimById(claimId)
+            _wasteClaim.value = claimResult
+
+            if (claimResult.isSuccess) {
+                val claim = claimResult.getOrNull()
+                val listingId = claim?.listingId
+                if (listingId != null) {
+                    val listingResult = repository.getListingById(listingId)
+                    _listing.value = listingResult
+
+                    if (listingResult.isSuccess) {
+                        val listing = listingResult.getOrNull()
+                        if (listing != null) {
+                            calculatePickupDeadline(claim, listing)
+                            checkIfOverdue()
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun calculatePickupDeadline(claim: WasteClaim) {
-        val claimTime = claim.claimTime
-        if (claimTime != null) {
-            try {
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-                val claimDate = dateFormat.parse(claimTime)
+    fun refresh() {
+        fetchWasteClaimAndListing()
+    }
 
-                val claimCalendar = Calendar.getInstance().apply { time = claimDate!! }
-                val pickupCalendar = Calendar.getInstance().apply {
-                    time = claimDate!!
-                    set(Calendar.HOUR_OF_DAY, 9)
-                    set(Calendar.MINUTE, 0)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
+    private fun calculatePickupDeadline(claim: WasteClaim, listing: Listing) {
+        val deadlineStr = listing.pickupWindowDuration
+        if (deadlineStr.isNullOrBlank()) {
+            _pickupDeadline.value = null
+            return
+        }
 
-                _pickupDeadline.value = pickupCalendar.time
-                _totalTimeInSeconds.value = ((pickupCalendar.timeInMillis - claimCalendar.timeInMillis) / 1000).toInt()
-            } catch (e: Exception) {
-                Log.e("TimerViewModel", "Error parsing claim time", e)
-                _pickupDeadline.value = null
-            }
-        } else {
+        try {
+            val deadlineDate = DateUtils.parseClaimTime(deadlineStr)
+            val claimDate = claim.claimTime?.let { DateUtils.parseClaimTime(it) } ?: Date()
+            _pickupDeadline.value = deadlineDate
+            _totalTimeInSeconds.value = ((deadlineDate.time - claimDate.time) / 1000).toInt().coerceAtLeast(0)
+        } catch (e: Exception) {
+            Log.e("TimerViewModel", "Error parsing pickup deadline", e)
             _pickupDeadline.value = null
         }
     }
