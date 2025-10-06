@@ -34,8 +34,8 @@ class ProfileViewModel(
 
     private var selectedImageFile: File? = null
 
-    fun fetchUserProfile(userId: Int) {
-        if (_userProfile.value?.id == userId) return
+    fun fetchUserProfile(userId: Int, forceRefresh: Boolean = false) {
+        if (!forceRefresh && _userProfile.value?.id == userId) return
         _isLoading.value = true
         _error.value = null
         viewModelScope.launch {
@@ -93,6 +93,9 @@ class ProfileViewModel(
                 if (response.isSuccessful) {
                     _userProfile.value = response.body()
                     _profileUpdateSuccess.value = true
+
+                    // Force refresh profile data after update
+                    fetchUserProfile(userId, forceRefresh = true)
                 } else {
                     val err = response.errorBody()?.string() ?: "Unknown"
                     Log.e("VM", "Update failed: ${response.code()}, $err")
@@ -120,6 +123,7 @@ class ProfileViewModel(
             null
         }
     }
+
     fun clearError() { _error.value = null }
     fun resetUpdateSuccessFlag() { _profileUpdateSuccess.value = false }
 }
