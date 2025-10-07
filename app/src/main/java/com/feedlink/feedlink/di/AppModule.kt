@@ -1,6 +1,9 @@
 package com.feedlink.feedlink.di
-
 import com.feedlink.feedlink.api.ApiInterface
+import com.feedlink.feedlink.api.AuthInterceptor
+import com.feedlink.feedlink.repository.ProfileRepository
+import com.feedlink.feedlink.viewmodel.ProfileViewModel
+
 import com.feedlink.feedlink.repository.ListingRepository
 import com.feedlink.feedlink.repository.WasteClaimRepository
 import com.feedlink.feedlink.viewmodel.NotificationViewModel
@@ -24,9 +27,10 @@ import java.util.concurrent.TimeUnit
 
 
 val networkModule = module {
+    single { AuthInterceptor() }
+
     single {
         HttpLoggingInterceptor().apply {
-
             level = HttpLoggingInterceptor.Level.BODY
         }
     }
@@ -34,6 +38,7 @@ val networkModule = module {
     single {
         OkHttpClient.Builder()
             .addInterceptor(get<HttpLoggingInterceptor>())
+            .addInterceptor(get<AuthInterceptor>())
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)
@@ -43,8 +48,8 @@ val networkModule = module {
     single {
         Retrofit.Builder()
             .baseUrl("https://feedlink-210643547921.herokuapp.com/api/")
-            .addConverterFactory(GsonConverterFactory.create())
             .client(get())
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
@@ -54,10 +59,11 @@ val networkModule = module {
 }
 
 val repositoryModule = module {
-    single { AuthRepository(get<ApiInterface>()) }
-    single { WasteClaimRepository(get<ApiInterface>()) }
-    single { ListingRepository(get<ApiInterface>()) }
-    single { ListingsRepository (get<ApiInterface>())}
+    single { AuthRepository(get()) }
+    single { ProfileRepository(get()) }
+    single { WasteClaimRepository(get()) }
+    single { ListingRepository(get()) }
+    single { ListingsRepository(get()) }
 }
 
 val viewModelModule = module {
@@ -70,8 +76,7 @@ val viewModelModule = module {
     viewModel { ListingViewModel(get(), get()) }
     viewModel { NotificationViewModel() }
     viewModel { (claimId: Int) -> TimerViewModel(get(), claimId) }
-
-
+    viewModel { ProfileViewModel(get()) }
 }
 
 val appModules = listOf(networkModule, repositoryModule, viewModelModule)

@@ -1,13 +1,27 @@
-package com.feedlink.feedlink
+package com.feedlink.feedlink.repository
 
 import com.feedlink.feedlink.model.Listing
 import com.feedlink.feedlink.model.Notification
 import com.feedlink.feedlink.model.StatusRequest
+import com.feedlink.feedlink.model.UserProfile
 import com.feedlink.feedlink.model.WasteClaim
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 
 object TestData {
+
+    val mockUserProfile = UserProfile(
+        id = "1",
+        firstName = "semhal",
+        lastName = "estif",
+        email = "semhalestif@gmail.com",
+        role = "Buyer",
+        profilePicture = "https://example.com/semhal.jpg",
+        address = "Nairobi,Kenya",
+        tillNumber = "123456",
+        latitude = 37.7749,
+        longitude = -122.4194
+    )
 
     val mockListings = listOf(
         Listing(

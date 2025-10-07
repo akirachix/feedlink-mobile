@@ -1,6 +1,8 @@
+
 package com.feedlink.feedlink.screens
 
 import android.content.Context
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,11 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import com.feedlink.feedlink.R
+import com.feedlink.feedlink.auth.TokenManager
 import com.feedlink.feedlink.ui.theme.Green
 import com.feedlink.feedlink.ui.theme.Orange
 import com.feedlink.feedlink.viewmodel.SigninViewModel
 import org.koin.androidx.compose.getViewModel
-
 
 @Composable
 fun SignInScreen(
@@ -60,12 +62,14 @@ fun SignInScreen(
     LaunchedEffect(signInResponse) {
         signInResponse?.let { response ->
             val prefs = context.getSharedPreferences("FEEDLINK_PREFS", Context.MODE_PRIVATE)
-            val savedRole = prefs.getString("USER_ROLE", "buyer")
+            val savedRole = prefs.getString("USER_ROLE", "buyer") ?: "buyer"
+
 
             prefs.edit {
                 putString("ACCESS_TOKEN", response.token)
                 putString("EMAIL", response.email)
                 putString("USER_ROLE", savedRole)
+                putString("USER_ID", response.userId)
             }
 
             when (savedRole) {
@@ -74,10 +78,6 @@ fun SignInScreen(
             }
         }
     }
-
-
-
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -92,7 +92,6 @@ fun SignInScreen(
                 .align(Alignment.TopCenter),
             contentScale = ContentScale.FillBounds
         )
-
 
         Box(
             modifier = Modifier
@@ -118,7 +117,6 @@ fun SignInScreen(
                         .wrapContentWidth(Alignment.CenterHorizontally)
                         .padding(bottom = 18.dp)
                 )
-
 
                 Text(
                     text = "Email:",
@@ -150,7 +148,6 @@ fun SignInScreen(
                     )
                 )
                 Spacer(Modifier.height(12.dp))
-
 
                 Text(
                     text = "Password:",
@@ -190,7 +187,6 @@ fun SignInScreen(
                     )
                 )
 
-
                 errorMessage?.takeIf { it.isNotBlank() }?.let { errorMsg ->
                     Text(
                         text = errorMsg,
@@ -200,9 +196,7 @@ fun SignInScreen(
                     )
                 }
 
-
                 Spacer(Modifier.height(6.dp))
-
 
                 Text(
                     "Forgot Password?",
@@ -212,9 +206,7 @@ fun SignInScreen(
                     modifier = Modifier.clickable { onForgotPassword() }
                 )
 
-
                 Spacer(Modifier.height(18.dp))
-
 
                 Button(
                     onClick = {
@@ -222,10 +214,8 @@ fun SignInScreen(
                             email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches()
                         val isPasswordValid = password.isNotBlank()
 
-
                         isEmailError = !isEmailValid
                         isPasswordError = !isPasswordValid
-
 
                         if (isEmailValid && isPasswordValid) {
                             viewModel.signin(email, password)
@@ -254,9 +244,7 @@ fun SignInScreen(
                     }
                 }
 
-
                 Spacer(Modifier.height(16.dp))
-
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -279,6 +267,3 @@ fun SignInScreen(
         }
     }
 }
-
-
-

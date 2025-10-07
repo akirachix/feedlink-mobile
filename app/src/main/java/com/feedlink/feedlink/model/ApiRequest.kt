@@ -16,7 +16,9 @@ data class SignUpRequest(
     val lastName: String,
 
     @SerializedName("role")
-    val role: String
+    val role: String,
+
+
 )
 
 data class SignInRequest(

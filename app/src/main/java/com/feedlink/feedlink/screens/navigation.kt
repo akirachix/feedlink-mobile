@@ -1,3 +1,4 @@
+
 package com.feedlink.feedlink.screens
 
 import androidx.compose.foundation.layout.padding
@@ -29,6 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.feedlink.screens.WelcomeScreen
+import com.feedlink.feedlink.auth.TokenManager
 import com.feedlink.feedlink.viewmodel.TimerViewModel
 import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -205,10 +207,10 @@ fun FeedLinkNavHost(
                 onNavigateToProductDetail = { id ->
                     navController.navigate(Screen.ProductDetail.createRoute(id))
                 },
-                onNavigateToProfile = { navController.navigate(Screen.Home.route) },
+                onNavigateToProfile = { navController.navigate("view_profile_screen") },
                 onNavigateToCart = { navController.navigate(Screen.Cart.route) },
-                onNavigateToOrders = { navController.navigate(Screen.Home.route) },
-                onNavigateToNotifications = { navController.navigate(Screen.Home.route) }
+                onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
+                onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) }
             )
         }
 
@@ -222,18 +224,67 @@ fun FeedLinkNavHost(
                 onBack = { navController.popBackStack() },
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToCart = { navController.navigate(Screen.Cart.route) },
-                onNavigateToOrders = { navController.navigate(Screen.Home.route) },
-                onNavigateToNotifications = { navController.navigate(Screen.Home.route) }
+                onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
+                onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) }
             )
         }
 
         composable(Screen.Cart.route) {
             CartScreen(
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
-                onNavigateToOrders = { navController.navigate(Screen.Home.route) },
-                onNavigateToNotifications = { navController.navigate(Screen.Home.route) },
+                onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
+                onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) },
                 onProceedToCheckout = { }
             )
+        }
+
+        composable(Screen.Orders.route) {
+            OrdersScreen()
+        }
+
+        composable(Screen.BuyerNotifications.route) {
+            BuyerNotificationsScreen()
+        }
+
+
+        composable(route = "view_profile_screen") {
+            ViewProfileScreen(
+                onNavigateToEdit = { userId ->
+                    navController.navigate("edit_profile/$userId")
+                },
+                onLogout = {
+                    TokenManager.clearAuthData()
+                    navController.navigate(Screen.SignIn.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = "edit_profile/{userId}",
+            arguments = listOf(
+                navArgument("userId") {
+                    type = NavType.IntType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getInt("userId")
+            if (userId != null) {
+                EditProfileFormScreen(
+                    userIdToEdit = userId,
+                    onProfileUpdated = {
+                        navController.popBackStack()
+                    },
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                androidx.compose.material3.Text("User ID missing")
+            }
         }
 
         composable(Screen.RecyclerHome.route) {
@@ -266,6 +317,16 @@ fun FeedLinkNavHost(
             )
         }
     }
+}
+
+@Composable
+fun OrdersScreen() {
+    TODO("Not yet implemented")
+}
+
+@Composable
+fun BuyerNotificationsScreen() {
+    TODO("Not yet implemented")
 }
 
 @Composable

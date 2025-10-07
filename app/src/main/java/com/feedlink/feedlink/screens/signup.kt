@@ -73,6 +73,7 @@ fun SignUpScreen(
                 putString("ACCESS_TOKEN", response.token)
                 putString("EMAIL", response.email)
                 putString("USER_ROLE", signupRole)
+                putString("USER_ID", response.userId)
             }
 
             when (response.role) {
@@ -282,7 +283,6 @@ fun SignUpScreen(
                         val isEmailValid = email.isNotBlank() && Patterns.EMAIL_ADDRESS.matcher(email).matches()
                         val isPasswordValid = password.length >= 6
                         val isConfirmPasswordValid = confirmPassword == password
-
 
                         isFirstNameError = !isFirstNameValid
                         isLastNameError = !isLastNameValid

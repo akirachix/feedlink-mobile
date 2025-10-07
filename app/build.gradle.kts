@@ -26,6 +26,17 @@ android {
                 "proguard-rules.pro"
             )
         }
+        packaging {
+            resources {
+                excludes += setOf(
+                    "META-INF/LICENSE-notice.md",
+                    "META-INF/LICENSE.md",
+                    "META-INF/NOTICE.md",
+                    "META-INF/ASL2.0",
+                    "META-INF/LGPL2.1"
+                )
+            }
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -60,6 +71,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)
@@ -96,6 +110,43 @@ dependencies {
     testImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("io.mockk:mockk-android:1.13.8")
     testImplementation(kotlin("test"))
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
+    implementation ("androidx.compose.ui:ui")
+    implementation ("androidx.compose.ui:ui-tooling-preview")
+    implementation ("androidx.compose.material3:material3")
+    implementation ("androidx.activity:activity-compose:1.8.2")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation ("androidx.navigation:navigation-compose:2.7.5")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.5.4")
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+
+    implementation("androidx.compose.material:material-icons-extended:<compose_version>")
+    implementation("androidx.security:security-crypto:1.1.0-alpha03")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.20")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.insert-koin:koin-android:3.5.0")
+    implementation("io.insert-koin:koin-androidx-compose:3.5.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.16")
+    implementation("io.ktor:ktor-client-okhttp:2.3.10")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.10")
+    implementation("io.ktor:ktor-serialization-gson:2.3.10")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("io.mockk:mockk-android:1.13.8")
+    testImplementation(kotlin("test"))
+
 
 
 }

@@ -11,35 +11,51 @@ import com.feedlink.feedlink.model.*
 import retrofit2.Response
 import retrofit2.http.*
 
+import com.feedlink.feedlink.model.UserProfile
+import okhttp3.MultipartBody
+
 interface ApiInterface {
-        @GET("listings/")
-        suspend fun getAvailableListings(): List<Listing>
 
-        @GET("wasteclaims/")
-        suspend fun getWasteClaims(): List<WasteClaim>
+    @GET("users/{userId}/")
+    suspend fun getUserProfileById(@Path("userId") userId: Int): Response<UserProfile>
 
-        @GET("wasteclaims/{id}")
-        suspend fun getWasteClaimById(@Path("id") claimId: Int): WasteClaim
-
-        @POST("wasteclaims/")
-        suspend fun createWasteClaim(@Body claim: WasteClaim): WasteClaim
-
-        @PUT("waste-claims/{id}/status")
-        suspend fun updateClaimStatus(
-                @Path("id") claimId: Int,
-                @Body statusRequest: StatusRequest
-        ): WasteClaim
+    @Multipart
+    @PUT("users/{userId}/")
+    suspend fun updateUserProfileWithImage(
+        @Path("userId") userId: Int,
+        @Part firstName: MultipartBody.Part?,
+        @Part lastName: MultipartBody.Part?,
+        @Part email: MultipartBody.Part?,
+        @Part address: MultipartBody.Part?,
+        @Part role: MultipartBody.Part?,
+        @Part tillNumber: MultipartBody.Part?,
+        @Part profilePicture: MultipartBody.Part?
+    ): Response<UserProfile>
 
     @GET("listings/")
     suspend fun fetchListings(
-        @Query("latitude") latitude: Double?,
-        @Query("longitude") longitude: Double?
+        @Query("latitude") latitude: Double? = null,
+        @Query("longitude") longitude: Double? = null
     ): Response<List<Listing>>
 
     @GET("listings/{id}/")
     suspend fun fetchProductDetail(
         @Path("id") listingId: Int
     ): Response<Listing>
+    @GET("wasteclaims/")
+    suspend fun getWasteClaims(): List<WasteClaim>
+
+    @GET("wasteclaims/{id}")
+    suspend fun getWasteClaimById(@Path("id") claimId: Int): WasteClaim
+
+    @POST("wasteclaims/")
+    suspend fun createWasteClaim(@Body claim: WasteClaim): WasteClaim
+
+    @PUT("waste-claims/{id}/status")
+    suspend fun updateClaimStatus(
+        @Path("id") claimId: Int,
+        @Body statusRequest: StatusRequest
+    ): WasteClaim
 
     @POST("signup/")
     suspend fun signup(@Body request: SignUpRequest): Response<SignUpResponse>
@@ -47,7 +63,7 @@ interface ApiInterface {
     @POST("login/")
     suspend fun login(@Body request: SignInRequest): Response<SignInResponse>
 
-    @POST("forgot password/")
+    @POST("forgot-password/")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<VerificationResponse>
 
     @POST("reset/")
@@ -55,7 +71,15 @@ interface ApiInterface {
 
     @POST("verification/")
     suspend fun verification(@Body request: VerificationRequest): Response<VerificationResponse>
+
+
+    @GET("listings/")
+    suspend fun getAvailableListings(): List<Listing>
+
+
+
+
+
     @GET("listings/{id}")
     suspend fun getListingById(@Path("id") listingId: Int): Listing
 }
-
