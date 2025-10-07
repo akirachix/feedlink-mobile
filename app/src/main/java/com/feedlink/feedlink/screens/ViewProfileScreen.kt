@@ -39,24 +39,23 @@ fun ViewProfileScreen(
 ) {
     val context = LocalContext.current
 
-
     val userProfile by viewModel.userProfile.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
 
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        TokenManager.initialize(context)
-    }
-
     LaunchedEffect(userProfile == null) {
         if (userProfile == null) {
-            val userId = TokenManager.getUserId()?.toIntOrNull()
+            val userIdStr = TokenManager.getUserId()
+            Log.d("Profile", "Saved user ID: $userIdStr")
+            val userId = userIdStr?.toIntOrNull()
+            Log.d("Profile", "Parsed user ID: $userId")
+
             if (userId != null) {
                 viewModel.fetchUserProfile(userId)
             } else {
-                Log.e("ViewProfileScreen", "User ID missing or invalid")
+                Log.e("Profile", "User ID missing or invalid")
             }
         }
     }
@@ -159,7 +158,7 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             contentAlignment = Alignment.BottomEnd
         ) {
             SubcomposeAsyncImage(
-                model = profile.profilePicture,
+                model = profile.profilePicture?.trim(),
                 loading = {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -203,7 +202,7 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             )
             IconButton(
                 onClick = {
-                    profile.id?.let { id ->
+                    profile.id?.toIntOrNull()?.let { id ->
                         onNavigateToEdit(id)
                     } ?: Toast.makeText(context, "Profile not loaded", Toast.LENGTH_SHORT).show()
                 },

@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.feedlink.feedlink.screens.AppNavigation
 import androidx.navigation.compose.rememberNavController
+import com.feedlink.feedlink.auth.TokenManager
 import com.feedlink.feedlink.screens.FeedLinkNavHost
 import com.feedlink.feedlink.screens.Screen
 import com.feedlink.feedlink.ui.theme.FeedlinkTheme
@@ -17,6 +18,7 @@ import com.feedlink.feedlink.ui.theme.FeedlinkTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        TokenManager.initialize(this)
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {

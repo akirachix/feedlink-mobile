@@ -38,23 +38,24 @@ interface ApiInterface {
         @Query("longitude") longitude: Double? = null
     ): Response<List<Listing>>
 
-    @GET("listings/{id}")
-    suspend fun getListingById(@Path("id") listingId: Int): Response<Listing>
-
+    @GET("listings/{id}/")
+    suspend fun fetchProductDetail(
+        @Path("id") listingId: Int
+    ): Response<Listing>
     @GET("wasteclaims/")
-    suspend fun getWasteClaims(): Response<List<WasteClaim>>
+    suspend fun getWasteClaims(): List<WasteClaim>
 
     @GET("wasteclaims/{id}")
-    suspend fun getWasteClaimById(@Path("id") claimId: Int): Response<WasteClaim>
+    suspend fun getWasteClaimById(@Path("id") claimId: Int): WasteClaim
 
     @POST("wasteclaims/")
-    suspend fun createWasteClaim(@Body claim: WasteClaim): Response<WasteClaim>
+    suspend fun createWasteClaim(@Body claim: WasteClaim): WasteClaim
 
     @PUT("waste-claims/{id}/status")
     suspend fun updateClaimStatus(
         @Path("id") claimId: Int,
         @Body statusRequest: StatusRequest
-    ): Response<WasteClaim>
+    ): WasteClaim
 
     @POST("signup/")
     suspend fun signup(@Body request: SignUpRequest): Response<SignUpResponse>
@@ -62,7 +63,7 @@ interface ApiInterface {
     @POST("login/")
     suspend fun login(@Body request: SignInRequest): Response<SignInResponse>
 
-    @POST("forgot-password/") // fixed space
+    @POST("forgot-password/")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<VerificationResponse>
 
     @POST("reset/")
@@ -70,4 +71,15 @@ interface ApiInterface {
 
     @POST("verification/")
     suspend fun verification(@Body request: VerificationRequest): Response<VerificationResponse>
+
+
+    @GET("listings/")
+    suspend fun getAvailableListings(): List<Listing>
+
+
+
+
+
+    @GET("listings/{id}")
+    suspend fun getListingById(@Path("id") listingId: Int): Listing
 }

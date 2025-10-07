@@ -34,8 +34,12 @@ class ProfileViewModel(
 
     private var selectedImageFile: File? = null
 
+
     fun fetchUserProfile(userId: Int, forceRefresh: Boolean = false) {
-        if (!forceRefresh && _userProfile.value?.id == userId) return
+        // Convert current profile.id (String) to Int for comparison
+        val currentProfileId = _userProfile.value?.id?.toIntOrNull()
+        if (!forceRefresh && currentProfileId == userId) return
+
         _isLoading.value = true
         _error.value = null
         viewModelScope.launch {
@@ -53,6 +57,7 @@ class ProfileViewModel(
             }
         }
     }
+
 
     fun onImageSelected(context: Context, uri: Uri?) {
         selectedImageFile = null
@@ -93,8 +98,6 @@ class ProfileViewModel(
                 if (response.isSuccessful) {
                     _userProfile.value = response.body()
                     _profileUpdateSuccess.value = true
-
-                    // Force refresh profile data after update
                     fetchUserProfile(userId, forceRefresh = true)
                 } else {
                     val err = response.errorBody()?.string() ?: "Unknown"

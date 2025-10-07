@@ -101,8 +101,11 @@ fun EditProfileFormScreen(
             }
         }
     }
+
+    // ✅ FIXED: Convert String? to Int? before comparison
     LaunchedEffect(userIdToEdit) {
-        if (userProfile?.id != userIdToEdit) {
+        val currentProfileId = userProfile?.id?.toIntOrNull()
+        if (currentProfileId != userIdToEdit) {
             profileViewModel.fetchUserProfile(userIdToEdit)
         }
     }
@@ -114,7 +117,6 @@ fun EditProfileFormScreen(
             onProfileUpdated()
         }
     }
-
 
     LaunchedEffect(error) {
         error?.let { errorMsg ->
@@ -159,7 +161,7 @@ fun EditProfileFormScreen(
             )
         }
     ) { paddingValues ->
-        if (isLoadingInitialData && userProfile?.id != userIdToEdit) {
+        if (isLoadingInitialData && userProfile?.id?.toIntOrNull() != userIdToEdit) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = darkGreenColor)
             }
@@ -237,7 +239,6 @@ fun EditProfileFormScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-
                         if (uiEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(uiEmail).matches()) {
                             Toast.makeText(context, "Please enter a valid email address.", Toast.LENGTH_SHORT).show()
                             return@Button

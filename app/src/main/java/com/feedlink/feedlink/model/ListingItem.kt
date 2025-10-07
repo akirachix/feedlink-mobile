@@ -13,10 +13,10 @@ data class ListingItem(
     val description: String?,
 
     @SerializedName("original_price")
-    val originalPrice: Float,
+    val originalPrice: Float?,
 
     @SerializedName("discounted_price")
-    val discountedPrice: Float,
+    val discountedPrice: Float?,
 
     @SerializedName("quantity")
     val quantity: String?,

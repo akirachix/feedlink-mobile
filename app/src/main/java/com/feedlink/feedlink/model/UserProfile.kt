@@ -1,7 +1,7 @@
 package com.feedlink.feedlink.model
 import com.google.gson.annotations.SerializedName
 data class UserProfile(
-    @SerializedName("id") val id: Int?,
+    @SerializedName("id") val id: String,
     @SerializedName("first_name") var firstName: String?,
     @SerializedName("last_name") var lastName: String?,
     @SerializedName("email") var email: String?,

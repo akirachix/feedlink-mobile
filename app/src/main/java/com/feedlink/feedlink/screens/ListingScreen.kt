@@ -158,6 +158,12 @@ fun BottomNavigationBar(
 
 @Composable
 fun ListingCard(listing: Listing, onProductClick: (Int) -> Unit, modifier: Modifier = Modifier) {
+    val imageUrl = when {
+        !listing.image.isNullOrBlank() -> listing.image.trim().takeIf { it.startsWith("http") }
+        !listing.imageUrl.isNullOrBlank() -> listing.imageUrl.trim().takeIf { it.startsWith("http") }
+        else -> null
+    }
+
     Card(
         modifier = modifier
             .width(140.dp)
@@ -174,7 +180,7 @@ fun ListingCard(listing: Listing, onProductClick: (Int) -> Unit, modifier: Modif
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(listing.image?.trim() ?: R.drawable.africanladyprofile)
+                    .data(imageUrl ?: R.drawable.africanladyprofile)
                     .crossfade(true)
                     .error(R.drawable.africanladyprofile)
                     .placeholder(R.drawable.africanladyprofile)
@@ -214,6 +220,12 @@ fun ListingCard(listing: Listing, onProductClick: (Int) -> Unit, modifier: Modif
         }
     }
 }
+
+
+
+
+
+
 
 @Composable
 fun CategoryRow(onCategorySelected: (String?) -> Unit) {

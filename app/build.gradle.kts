@@ -71,16 +71,13 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-<<<<<<< HEAD
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.foundation)
-=======
     implementation(libs.androidx.espresso.core)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.navigation)
->>>>>>> 513e372044f15b7221bea7d7b69c7a5019179a2a
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -114,7 +111,6 @@ dependencies {
     androidTestImplementation("io.mockk:mockk-android:1.13.8")
     testImplementation(kotlin("test"))
 
-<<<<<<< HEAD
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
@@ -154,7 +150,3 @@ dependencies {
 
 
 }
-=======
-
-}
->>>>>>> 513e372044f15b7221bea7d7b69c7a5019179a2a
