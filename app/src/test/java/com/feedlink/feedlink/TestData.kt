@@ -11,12 +11,12 @@ import retrofit2.Response
 object TestData {
 
     val mockUserProfile = UserProfile(
-        id = 1,
+        id = "1",
         firstName = "semhal",
         lastName = "estif",
         email = "semhalestif@gmail.com",
         role = "Buyer",
-        profilePicture = "https://example.com/semhal.jpg", // ✅ removed trailing spaces
+        profilePicture = "https://example.com/semhal.jpg",
         address = "Nairobi,Kenya",
         tillNumber = "123456",
         latitude = 37.7749,
@@ -34,7 +34,7 @@ object TestData {
             discountedPrice = 0.5f,
             expiryDate = "2023-12-31",
             image = null,
-            imageUrl = "https://example.com/bananas.jpg", // ✅ removed trailing spaces
+            imageUrl = "https://example.com/bananas.jpg",
             status = "available",
             createdAt = "2023-11-15T10:30:00",
             updatedAt = "2023-11-15T10:30:00",
@@ -53,7 +53,7 @@ object TestData {
             discountedPrice = 0.3f,
             expiryDate = "2023-12-20",
             image = null,
-            imageUrl = "https://example.com/lettuce.jpg", // ✅ removed trailing spaces
+            imageUrl = "https://example.com/lettuce.jpg",
             status = "available",
             createdAt = "2023-11-16T14:45:00",
             updatedAt = "2023-11-16T14:45:00",

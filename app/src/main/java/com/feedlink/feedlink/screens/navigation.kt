@@ -207,10 +207,10 @@ fun FeedLinkNavHost(
                 onNavigateToProductDetail = { id ->
                     navController.navigate(Screen.ProductDetail.createRoute(id))
                 },
-                onNavigateToProfile = { navController.navigate("view_profile_screen") }, // ✅ FIXED
+                onNavigateToProfile = { navController.navigate("view_profile_screen") },
                 onNavigateToCart = { navController.navigate(Screen.Cart.route) },
-                onNavigateToOrders = { navController.navigate(Screen.Orders.route) }, // ✅ FIXED
-                onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) } // ✅ FIXED
+                onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
+                onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) }
             )
         }
 
