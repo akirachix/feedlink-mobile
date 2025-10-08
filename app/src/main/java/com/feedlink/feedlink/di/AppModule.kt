@@ -27,7 +27,7 @@ val networkModule = module {
 
     single {
         Retrofit.Builder()
-            .baseUrl("https://feedlink-210643547921.herokuapp.com/api/") // ✅ YOUR API
+            .baseUrl("https://feedlink-210643547921.herokuapp.com/api/") 
             .addConverterFactory(GsonConverterFactory.create())
             .client(get())
             .build()
