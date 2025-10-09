@@ -89,7 +89,7 @@ fun ViewProfileScreen(
                         )
                     }
                 },
-                title = { }, // 👈 Removed title
+                title = { },
                 actions = {
                     IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(
