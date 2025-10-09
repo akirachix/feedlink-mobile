@@ -12,6 +12,7 @@ import retrofit2.Response
 import retrofit2.http.*
 
 import com.feedlink.feedlink.model.UserProfile
+import com.feedlink.feedlink.network.Order
 import com.feedlink.feedlink.network.OrderStatusResponse
 import com.feedlink.feedlink.network.PaymentStatusResponse
 import com.feedlink.feedlink.network.StkPushRequest
@@ -101,4 +102,7 @@ interface ApiInterface {
     suspend fun getPaymentStatus(
         @Path("payment_id") paymentId: String
     ): Response<PaymentStatusResponse>
+
+    @GET("orders/")
+    suspend fun getOrders(): List<Order>
 }
