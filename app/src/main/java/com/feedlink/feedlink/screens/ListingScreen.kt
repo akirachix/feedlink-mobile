@@ -1,6 +1,4 @@
-
 package com.feedlink.feedlink.screens
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,7 +33,10 @@ import com.feedlink.feedlink.viewmodel.ListingsViewModel
 import org.koin.androidx.compose.koinViewModel
 
 
+
+
 data class CategoryItem(val name: String, val iconRes: Int)
+
 
 @Composable
 fun BottomNavigationBar(
@@ -156,6 +157,7 @@ fun BottomNavigationBar(
     }
 }
 
+
 @Composable
 fun ListingCard(listing: Listing, onProductClick: (Int) -> Unit, modifier: Modifier = Modifier) {
     val imageUrl = when {
@@ -163,6 +165,7 @@ fun ListingCard(listing: Listing, onProductClick: (Int) -> Unit, modifier: Modif
         !listing.imageUrl.isNullOrBlank() -> listing.imageUrl.trim().takeIf { it.startsWith("http") }
         else -> null
     }
+
 
     Card(
         modifier = modifier
@@ -227,6 +230,13 @@ fun ListingCard(listing: Listing, onProductClick: (Int) -> Unit, modifier: Modif
 
 
 
+
+
+
+
+
+
+
 @Composable
 fun CategoryRow(onCategorySelected: (String?) -> Unit) {
     val categories = listOf(
@@ -235,6 +245,7 @@ fun CategoryRow(onCategorySelected: (String?) -> Unit) {
         CategoryItem("Drinks", R.drawable.drinks),
         CategoryItem("Dairy", R.drawable.milk)
     )
+
 
     Row(
         horizontalArrangement = Arrangement.SpaceAround,
@@ -295,10 +306,12 @@ fun ForYouSection(listings: List<Listing>, onProductClick: (Int) -> Unit) {
     }
 }
 
+
 @Composable
 fun AllProductsGrid(listings: List<Listing>, onProductClick: (Int) -> Unit) {
     val itemsPerRow = 2
     val rows = listings.chunked(itemsPerRow)
+
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         rows.forEach { rowItems ->
@@ -319,6 +332,7 @@ fun AllProductsGrid(listings: List<Listing>, onProductClick: (Int) -> Unit) {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListingScreen(
@@ -334,7 +348,9 @@ fun ListingScreen(
     val launchPermissionRequest = remember { mutableStateOf<(() -> Unit)?>(null) }
     var isLoadingPermission by remember { mutableStateOf(false) }
 
+
     var selectedCategory by remember { mutableStateOf<String?>(null) }
+
 
     RequestLocationPermission(
         onPermissionResult = { location ->
@@ -352,10 +368,13 @@ fun ListingScreen(
         }
     )
 
+
     val listingsResult by viewModel.listings
     val uiState by viewModel.uiState
 
+
     val allEdibleListings = listingsResult?.filter { it.productType == "edible" } ?: emptyList()
+
 
     val filteredListings = if (selectedCategory.isNullOrEmpty() || selectedCategory == "All") {
         allEdibleListings
@@ -367,6 +386,7 @@ fun ListingScreen(
             else -> allEdibleListings.filter { it.category == selectedCategory }
         }
     }
+
 
     Scaffold(
         topBar = {
@@ -383,15 +403,13 @@ fun ListingScreen(
                             style = MaterialTheme.typography.titleLarge,
                             color = Color(0xFF2E4E1E)
                         )
-                        Image(
-                            painter = painterResource(id = R.drawable.profile),
+                        Icon(
+                            imageVector = Icons.Default.Person,
                             contentDescription = "Profile",
+                            tint = Color(0xFF2E4E1E),
                             modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(Color.Gray)
-                                .clickable { onNavigateToProfile() },
-                            contentScale = ContentScale.Crop
+                                .size(24.dp)
+                                .clickable { onNavigateToProfile() }
                         )
                     }
                 },
@@ -424,6 +442,7 @@ fun ListingScreen(
                 return@Scaffold
             }
 
+
             when {
                 uiState.isLoading -> {
                     Box(
@@ -435,6 +454,7 @@ fun ListingScreen(
                         CircularProgressIndicator(color = Color(0xFF2E4E1E))
                     }
                 }
+
 
                 uiState.error != null -> {
                     Box(
@@ -450,6 +470,7 @@ fun ListingScreen(
                         )
                     }
                 }
+
 
                 else -> {
                     Column(
@@ -468,13 +489,17 @@ fun ListingScreen(
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
 
+
                         Spacer(modifier = Modifier.height(12.dp))
+
 
                         CategoryRow(onCategorySelected = { category ->
                             selectedCategory = category
                         })
 
+
                         Spacer(modifier = Modifier.height(16.dp))
+
 
                         Text(
                             text = "For you",
@@ -489,7 +514,9 @@ fun ListingScreen(
                             onProductClick = onNavigateToProductDetail
                         )
 
+
                         Spacer(modifier = Modifier.height(24.dp))
+
 
                         Text(
                             text = "All Products",
@@ -504,6 +531,7 @@ fun ListingScreen(
                             onProductClick = onNavigateToProductDetail
                         )
 
+
                         Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
@@ -511,3 +539,4 @@ fun ListingScreen(
         }
     )
 }
+

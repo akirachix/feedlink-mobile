@@ -1,5 +1,6 @@
 package com.feedlink.feedlink.screens
 
+
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -7,30 +8,27 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -52,9 +50,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecyclerHome(modifier: Modifier = Modifier) {
+fun RecyclerHome(
+    modifier: Modifier = Modifier,
+    navToProfile: () -> Unit
+) {
     val context = LocalContext.current
     val viewModel: ListingViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -63,18 +65,18 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
     val claimedListings by viewModel.claimedListings.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val newListingDetected by viewModel.newListingDetected.collectAsState()
-
     val listState = rememberLazyGridState()
-    val coroutineScope = rememberCoroutineScope()
     var selectedListing by remember { mutableStateOf<Listing?>(null) }
+
 
     LaunchedEffect(Unit) {
         viewModel.fetchInedibleListings()
     }
 
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
+    ) { isGranted ->
         if (isGranted) {
             NotificationManager.showNotification(
                 context,
@@ -84,6 +86,7 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
         }
         viewModel.resetNewListingFlag()
     }
+
 
     LaunchedEffect(newListingDetected) {
         if (newListingDetected) {
@@ -115,15 +118,16 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
         }
     }
 
+
     val filteredListings = when (val currentState = uiState) {
         is ListingUiState.Success -> {
             currentState.listings.filter { listing ->
-                searchQuery.isEmpty() ||
-                        (listing.category?.contains(searchQuery, ignoreCase = true) == true)
+                searchQuery.isEmpty() || (listing.category?.contains(searchQuery, ignoreCase = true) == true)
             }
         }
         else -> emptyList()
     }
+
 
     if (showClaimSuccessDialog) {
         AlertDialog(
@@ -138,6 +142,7 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
         )
     }
 
+
     selectedListing?.let { listing ->
         ListingDetailsPopup(
             listing = listing,
@@ -149,6 +154,7 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
             isClaimed = claimedListings.contains(listing.listingId)
         )
     }
+
 
     Scaffold(
         topBar = {
@@ -171,6 +177,23 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = "Refresh",
                                 tint = if (isRefreshing) Color.Gray else Color(0xFF4CAF50)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .clickable { navToProfile() }
+                                .background(Color(0xFFE0E0E0))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Profile",
+                                tint = Color.Green,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .align(Alignment.Center)
                             )
                         }
                     },
@@ -236,7 +259,6 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
                                 )
                             }
                         }
-
                         if (isRefreshing) {
                             LinearProgressIndicator(
                                 modifier = Modifier
@@ -248,7 +270,6 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
                         }
                     }
                 }
-
                 is ListingUiState.Success -> {
                     if (filteredListings.isEmpty()) {
                         Box(
@@ -293,7 +314,6 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
                                 )
                             }
                         }
-
                         if (isRefreshing) {
                             LinearProgressIndicator(
                                 modifier = Modifier
@@ -305,7 +325,6 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
                         }
                     }
                 }
-
                 is ListingUiState.Error -> {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -314,15 +333,14 @@ fun RecyclerHome(modifier: Modifier = Modifier) {
                     ) {
                         Text("Failed to load items: ${currentState.message}")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.refreshListings() }) {
-                            Text("Retry")
-                        }
+                        Button(onClick = { viewModel.refreshListings() }) { Text("Retry") }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun ListingItem(
@@ -354,9 +372,7 @@ fun ListingItem(
                     .height(140.dp),
                 contentScale = ContentScale.Fit
             )
-
             Spacer(modifier = Modifier.height(12.dp))
-
             Text(
                 text = "Type: ${listing.productType?.replaceFirstChar { it.uppercase() } ?: "Unknown"}",
                 style = MaterialTheme.typography.bodySmall,
@@ -364,7 +380,6 @@ fun ListingItem(
                 fontSize = 12.sp,
                 maxLines = 1
             )
-
             Text(
                 text = "Category: ${listing.category ?: "None"}",
                 style = MaterialTheme.typography.bodySmall,
@@ -372,16 +387,13 @@ fun ListingItem(
                 fontSize = 12.sp,
                 maxLines = 1
             )
-
             Text(
                 text = "${listing.quantity ?: "0"} ${listing.unit ?: "units"}",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 fontSize = 12.sp
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
             Button(
                 onClick = onClaimClick,
                 modifier = Modifier
@@ -404,6 +416,7 @@ fun ListingItem(
     }
 }
 
+
 @Composable
 fun ListingDetailsPopup(
     listing: Listing,
@@ -414,7 +427,6 @@ fun ListingDetailsPopup(
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
@@ -450,9 +462,7 @@ fun ListingDetailsPopup(
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 AsyncImage(
                     model = listing.image ?: listing.imageUrl,
                     contentDescription = "Waste image",
@@ -461,24 +471,16 @@ fun ListingDetailsPopup(
                         .height(200.dp),
                     contentScale = ContentScale.Fit
                 )
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 DetailRow(label = "Product Type", value = listing.productType?.replaceFirstChar { it.uppercase() })
                 DetailRow(label = "Category", value = listing.category?.replaceFirstChar { it.uppercase() })
                 DetailRow(label = "Description", value = listing.description)
                 DetailRow(label = "Quantity", value = "${listing.quantity ?: "0"} ${listing.unit ?: "units"}")
-
                 DetailRow(label = "Original Price", value = listing.originalPrice.toString())
                 DetailRow(label = "Discounted Price", value = listing.discountedPrice.toString())
-
-                listing.expiryDate?.let {
-                    DetailRow(label = "Expiry Date", value = formatDateTime(it))
-                }
+                listing.expiryDate?.let { DetailRow(label = "Expiry Date", value = formatDateTime(it)) }
                 DetailRow(label = "Listed On", value = formatDateTime(listing.createdAt))
-
                 Spacer(modifier = Modifier.height(24.dp))
-
                 Button(
                     onClick = {
                         onClaimClick()
@@ -492,16 +494,13 @@ fun ListingDetailsPopup(
                     shape = RoundedCornerShape(8.dp),
                     enabled = !isClaimed
                 ) {
-                    Text(
-                        text = if (isClaimed) "Already Claimed" else "Claim This Item",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                    Text(text = if (isClaimed) "Already Claimed" else "Claim This Item")
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun DetailRow(
@@ -521,12 +520,13 @@ fun DetailRow(
             color = Color.Gray
         )
         Text(
-            text = value ?: "—",
+            text = value ?: "N/A",
             fontSize = 16.sp,
             color = Color.Black
         )
     }
 }
+
 
 private fun formatDateTime(dateString: String): String {
     return try {
@@ -534,13 +534,11 @@ private fun formatDateTime(dateString: String): String {
             SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()),
             SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         )
-
         for (format in formats) {
             try {
                 val date = format.parse(dateString) ?: continue
                 val now = Date()
                 val diff = now.time - date.time
-
                 return when {
                     diff < TimeUnit.MINUTES.toMillis(1) -> "Just now"
                     diff < TimeUnit.HOURS.toMillis(1) -> "${TimeUnit.MILLISECONDS.toMinutes(diff)} minutes ago"
@@ -560,3 +558,4 @@ private fun formatDateTime(dateString: String): String {
         dateString
     }
 }
+

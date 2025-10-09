@@ -1,6 +1,4 @@
-
 package com.feedlink.feedlink.screens
-
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
@@ -21,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -31,10 +30,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.feedlink.screens.WelcomeScreen
 import com.feedlink.feedlink.auth.TokenManager
+import com.feedlink.feedlink.viewmodel.CartViewModel
 import com.feedlink.feedlink.viewmodel.TimerViewModel
 import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+
+
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
@@ -55,6 +58,9 @@ sealed class Screen(val route: String) {
         fun createRoute(email: String, otp: String) = "reset_password/$email/$otp"
     }
 
+
+
+
     object Home : Screen("home")
     object ProductDetail : Screen("product_detail/{listingId}") {
         fun createRoute(id: Int) = "product_detail/$id"
@@ -70,7 +76,17 @@ sealed class Screen(val route: String) {
     object Timer : Screen("timer/{claimId}") {
         fun createRoute(claimId: Int) = "timer/$claimId"
     }
+
+    object PaymentMethod : Screen("payment_method/{orderId}/{totalAmount}") {
+        fun createRoute(orderId: Int, totalAmount: Int) = "payment_method/$orderId/$totalAmount"
+    }
+    object OrderConfirmed : Screen("order_confirmed_screen/{orderId}") {
+        fun createRoute(orderId: Int) = "order_confirmed_screen/$orderId"
+    }
 }
+
+
+
 
 @Composable
 fun FeedLinkNavHost(
@@ -78,6 +94,9 @@ fun FeedLinkNavHost(
     startDestination: String = Screen.Splash.route
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
+
+
+
 
         composable(Screen.Splash.route) {
             SplashScreen()
@@ -89,12 +108,18 @@ fun FeedLinkNavHost(
             }
         }
 
+
+
+
         composable(Screen.Teaser1.route) {
             WelcomeScreen(
                 onSkipClicked = { navController.navigate(Screen.AuthChoice.route) },
                 onNextClicked = { navController.navigate(Screen.Teaser2.route) }
             )
         }
+
+
+
 
         composable(Screen.Teaser2.route) {
             SecondWelcome(
@@ -103,12 +128,38 @@ fun FeedLinkNavHost(
             )
         }
 
+
+
+
         composable(Screen.Teaser3.route) {
             ThirdWelcome(
                 onSkipClicked = { navController.navigate(Screen.AuthChoice.route) },
                 onNextClicked = { navController.navigate(Screen.AuthChoice.route) }
             )
         }
+
+        composable(
+            route = Screen.PaymentMethod.route,
+            arguments = listOf(
+                navArgument("orderId") { type = NavType.IntType },
+                navArgument("totalAmount") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+            val totalAmount = backStackEntry.arguments?.getInt("totalAmount") ?: 0
+            PaymentMethodScreen(
+                navController = navController,
+                orderId = orderId,
+                totalAmount = totalAmount
+            )
+        }
+
+        composable(Screen.OrderConfirmed.route) {
+            OrderConfirmedScreen(navController = navController)
+        }
+
+
+
 
         composable(Screen.AuthChoice.route) {
             AuthChoiceScreen(
@@ -117,12 +168,18 @@ fun FeedLinkNavHost(
             )
         }
 
+
+
+
         composable(Screen.RoleChoice.route) {
             WelcomeRoleScreen(
                 onCustomerClick = { navController.navigate(Screen.SignUp.createRoute("buyer")) },
                 onRecyclerClick = { navController.navigate(Screen.SignUp.createRoute("recycler")) }
             )
         }
+
+
+
 
         composable(Screen.SignIn.route) {
             SignInScreen(
@@ -140,6 +197,9 @@ fun FeedLinkNavHost(
                 onForgotPassword = { navController.navigate(Screen.ForgotPassword.route) }
             )
         }
+
+
+
 
         composable(
             route = Screen.SignUp.route,
@@ -162,11 +222,17 @@ fun FeedLinkNavHost(
             )
         }
 
+
+
+
         composable(Screen.ForgotPassword.route) {
             ForgotPasswordScreen { email ->
                 navController.navigate(Screen.Verification.createRoute(email))
             }
         }
+
+
+
 
         composable(
             route = Screen.Verification.route,
@@ -181,6 +247,9 @@ fun FeedLinkNavHost(
                 onResendClick = { }
             )
         }
+
+
+
 
         composable(
             route = Screen.ResetPassword.route,
@@ -202,6 +271,9 @@ fun FeedLinkNavHost(
             )
         }
 
+
+
+
         composable(Screen.Home.route) {
             ListingScreen(
                 onNavigateToProductDetail = { id ->
@@ -213,6 +285,9 @@ fun FeedLinkNavHost(
                 onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) }
             )
         }
+
+
+
 
         composable(
             route = Screen.ProductDetail.route,
@@ -229,22 +304,71 @@ fun FeedLinkNavHost(
             )
         }
 
+
+
+
         composable(Screen.Cart.route) {
+            val cartViewModel: CartViewModel = viewModel()
+            val totalPrice = cartViewModel.totalPrice
             CartScreen(
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
                 onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) },
-                onProceedToCheckout = { }
+                onProceedToCheckout = {
+                    val orderId = 48
+                    val totalAmount = totalPrice
+                    navController.navigate(Screen.PaymentMethod.createRoute(orderId, totalAmount))
+                }
             )
         }
 
+
+
         composable(Screen.Orders.route) {
-            OrdersScreen()
+            OrderHistory(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToOrders = {
+                },
+                onNavigateToNotifications = {
+                    navController.navigate(Screen.BuyerNotifications.route) {
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
 
+
+
         composable(Screen.BuyerNotifications.route) {
-            BuyerNotificationsScreen()
+            BuyerNotifications(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToCart = {
+                    navController.navigate(Screen.Cart.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToOrders = {
+                    navController.navigate(Screen.Orders.route) {
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToNotifications = {
+                }
+            )
         }
+
+
+
+
+
 
 
         composable(route = "view_profile_screen") {
@@ -258,9 +382,14 @@ fun FeedLinkNavHost(
                         popUpTo(Screen.Splash.route) { inclusive = true }
                         launchSingleTop = true
                     }
+                },onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }
+
+
+
 
         composable(
             route = "edit_profile/{userId}",
@@ -287,6 +416,9 @@ fun FeedLinkNavHost(
             }
         }
 
+
+
+
         composable(Screen.RecyclerHome.route) {
             RecyclerAppNavGraph(navController = navController)
         }
@@ -306,10 +438,16 @@ fun FeedLinkNavHost(
             val claimId = backStackEntry.arguments?.getInt("claimId") ?: -1
             if (claimId == -1) return@composable
 
+
+
+
             val viewModel: TimerViewModel = koinViewModel(
                 key = "timer_vm_$claimId",
                 parameters = { parametersOf(claimId) }
             )
+
+
+
 
             TimerScreen(
                 onBackClick = { navController.popBackStack() },
@@ -320,20 +458,19 @@ fun FeedLinkNavHost(
 }
 
 @Composable
-fun OrdersScreen() {
-    TODO("Not yet implemented")
-}
-
-@Composable
 fun BuyerNotificationsScreen() {
     TODO("Not yet implemented")
 }
+
+
+
 
 @Composable
 fun RecyclerAppNavGraph(navController: NavController) {
     val recyclerNavController = rememberNavController()
     val navBackStackEntry by recyclerNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
 
     Scaffold(
         bottomBar = {
@@ -349,7 +486,11 @@ fun RecyclerAppNavGraph(navController: NavController) {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Screen.RecyclerHome.route) {
-                RecyclerHome()
+                RecyclerHome(
+                    navToProfile = {
+                        navController.navigate("view_profile_screen")
+                    }
+                )
             }
             composable(Screen.Collection.route) {
                 WasteCollection(
@@ -373,7 +514,6 @@ fun RecyclerAppNavGraph(navController: NavController) {
         }
     }
 }
-
 @Composable
 fun CurvedBottomNavigationBar(
     navController: NavController,
@@ -396,6 +536,9 @@ fun CurvedBottomNavigationBar(
                 Screen.History to Icons.Default.List,
                 Screen.RecyclerNotifications to Icons.Default.Notifications
             )
+
+
+
 
             items.forEach { (screen, icon) ->
                 val isSelected = currentRoute == screen.route
@@ -431,3 +574,7 @@ fun CurvedBottomNavigationBar(
         }
     }
 }
+
+
+
+

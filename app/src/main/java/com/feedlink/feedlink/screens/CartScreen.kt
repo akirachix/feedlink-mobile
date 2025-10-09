@@ -26,10 +26,11 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.model.ListingItem
-import com.feedlink.feedlink.ui.theme.Green
+import com.feedlink.feedlink.ui.theme.*
 import com.feedlink.feedlink.ui.theme.FeedlinkTheme
 import com.feedlink.feedlink.viewmodel.CartViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 @Composable
 fun CartScreen(
