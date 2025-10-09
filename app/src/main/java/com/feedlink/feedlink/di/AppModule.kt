@@ -13,6 +13,8 @@ import com.feedlink.feedlink.repository.ListingsRepository
 import com.feedlink.feedlink.viewmodel.ForgotPasswordViewModel
 import com.feedlink.feedlink.viewmodel.ListingViewModel
 import com.feedlink.feedlink.viewmodel.ListingsViewModel
+import com.feedlink.feedlink.viewmodel.OrderViewModel
+import com.feedlink.feedlink.viewmodel.PaymentViewModel
 import com.feedlink.feedlink.viewmodel.ProductDetailViewModel
 import com.feedlink.feedlink.viewmodel.SigninViewModel
 import com.feedlink.feedlink.viewmodel.SignupViewModel
@@ -37,6 +39,7 @@ val networkModule = module {
 
     single {
         OkHttpClient.Builder()
+            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .addInterceptor(get<HttpLoggingInterceptor>())
             .addInterceptor(get<AuthInterceptor>())
             .connectTimeout(15, TimeUnit.SECONDS)
@@ -77,6 +80,9 @@ val viewModelModule = module {
     viewModel { NotificationViewModel() }
     viewModel { (claimId: Int) -> TimerViewModel(get(), claimId) }
     viewModel { ProfileViewModel(get()) }
+    viewModel { PaymentViewModel(get()) }
+    viewModel { OrderViewModel(get()) }
+
 }
 
 val appModules = listOf(networkModule, repositoryModule, viewModelModule)

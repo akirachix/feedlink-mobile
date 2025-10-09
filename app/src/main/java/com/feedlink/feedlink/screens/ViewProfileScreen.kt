@@ -1,5 +1,6 @@
 package com.feedlink.feedlink.screens
 
+
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -9,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
@@ -30,20 +32,25 @@ import com.feedlink.feedlink.model.UserProfile
 import com.feedlink.feedlink.viewmodel.ProfileViewModel
 import org.koin.androidx.compose.getViewModel
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewProfileScreen(
     onNavigateToEdit: (Int) -> Unit,
     onLogout: () -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: ProfileViewModel = getViewModel()
 ) {
     val context = LocalContext.current
+
 
     val userProfile by viewModel.userProfile.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
 
+
     var showLogoutDialog by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(userProfile == null) {
         if (userProfile == null) {
@@ -51,6 +58,7 @@ fun ViewProfileScreen(
             Log.d("Profile", "Saved user ID: $userIdStr")
             val userId = userIdStr?.toIntOrNull()
             Log.d("Profile", "Parsed user ID: $userId")
+
 
             if (userId != null) {
                 viewModel.fetchUserProfile(userId)
@@ -60,6 +68,7 @@ fun ViewProfileScreen(
         }
     }
 
+
     LaunchedEffect(error) {
         error?.let {
             Toast.makeText(context, "Error: $it", Toast.LENGTH_LONG).show()
@@ -67,10 +76,20 @@ fun ViewProfileScreen(
         }
     }
 
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Profile") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color(0xFF234B06)
+                        )
+                    }
+                },
+                title = { }, // 👈 Removed title
                 actions = {
                     IconButton(onClick = { showLogoutDialog = true }) {
                         Icon(
@@ -93,8 +112,10 @@ fun ViewProfileScreen(
                 isLoading && userProfile == null ->
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
 
+
                 userProfile != null ->
                     ProfileContent(profile = userProfile!!, onNavigateToEdit = onNavigateToEdit)
+
 
                 error != null ->
                     Column(
@@ -111,11 +132,13 @@ fun ViewProfileScreen(
                         }) { Text("Retry") }
                     }
 
+
                 else ->
                     Text("No profile data.", Modifier.align(Alignment.Center))
             }
         }
     }
+
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -140,10 +163,12 @@ fun ViewProfileScreen(
     }
 }
 
+
 @Composable
 fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
     val context = LocalContext.current
     val darkGreenColor = Color(0xFF234B06)
+
 
     Column(
         modifier = Modifier
@@ -172,11 +197,18 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
                     }
                 },
                 success = { successState ->
-                    Log.d("ViewProfileScreen", "Coil Success: Image loaded from URL: ${successState.result.request}")
+                    Log.d(
+                        "ViewProfileScreen",
+                        "Coil Success: Image loaded from URL: ${successState.result.request}"
+                    )
                     SubcomposeAsyncImageContent()
                 },
                 error = {
-                    Log.e("ViewProfileScreen", "Coil Error: Failed to load image. URL: ${profile.profilePicture}", it.result.throwable)
+                    Log.e(
+                        "ViewProfileScreen",
+                        "Coil Error: Failed to load image. URL: ${profile.profilePicture}",
+                        it.result.throwable
+                    )
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -221,15 +253,23 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             }
         }
 
+
         Spacer(modifier = Modifier.height(24.dp))
+
 
         Text(
             text = "${profile.firstName ?: ""} ${profile.lastName ?: ""}".trim(),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
+            color = darkGreenColor,
+//            ...updated
+            fontWeight = FontWeight.Bold,
+
+
+            )
+
 
         Spacer(modifier = Modifier.height(8.dp))
+
 
         if (!profile.email.isNullOrBlank()) {
             Text(
@@ -240,36 +280,31 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                ProfileDetailRow(label = "Location", value = profile.address)
-            }
-        }
-    }
-}
 
-@Composable
-fun ProfileDetailRow(label: String, value: String?) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(0.3f)
-        )
-        Text(
-            text = if (value.isNullOrBlank()) "N/A" else value,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(0.7f)
-        )
+
+
     }
-}
+    @Composable
+    fun ProfileDetailRow(label: String, value: String?) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(0.3f)
+            )
+            Text(
+                text = if (value.isNullOrBlank()) "N/A" else value,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(0.7f)
+            )
+        }
+    }}
+
+
+

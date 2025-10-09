@@ -12,6 +12,10 @@ import retrofit2.Response
 import retrofit2.http.*
 
 import com.feedlink.feedlink.model.UserProfile
+import com.feedlink.feedlink.network.OrderStatusResponse
+import com.feedlink.feedlink.network.PaymentStatusResponse
+import com.feedlink.feedlink.network.StkPushRequest
+import com.feedlink.feedlink.network.StkPushSuccessResponse
 import okhttp3.MultipartBody
 
 interface ApiInterface {
@@ -82,4 +86,19 @@ interface ApiInterface {
 
     @GET("listings/{id}")
     suspend fun getListingById(@Path("id") listingId: Int): Listing
+
+    @POST("ussdpush")
+    suspend fun initiateStkPush(
+        @Body stkPushRequest: StkPushRequest
+    ): Response<StkPushSuccessResponse>
+
+    @GET("orders/{order_id}/")
+    suspend fun getOrderStatus(
+        @Path("order_id") orderId: Int
+    ): Response<OrderStatusResponse>
+
+    @GET("payments/{payment_id}/")
+    suspend fun getPaymentStatus(
+        @Path("payment_id") paymentId: String
+    ): Response<PaymentStatusResponse>
 }
