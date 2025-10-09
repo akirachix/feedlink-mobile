@@ -261,7 +261,6 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             text = "${profile.firstName ?: ""} ${profile.lastName ?: ""}".trim(),
             style = MaterialTheme.typography.headlineSmall,
             color = darkGreenColor,
-//            ...updated
             fontWeight = FontWeight.Bold,
 
 
