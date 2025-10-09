@@ -60,9 +60,9 @@ fun OrderHistory(
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
-                selected = "orders", // or "cart" if that's your identifier — adjust as needed
+                selected = "orders", 
                 onHomeClick = onNavigateToHome,
-                onCartClick = {}, // You might want to implement this
+                onCartClick = {},
                 onOrdersClick = onNavigateToOrders,
                 onNotificationsClick = onNavigateToNotifications
             )
@@ -73,7 +73,6 @@ fun OrderHistory(
                     .fillMaxSize()
                     .background(Color.White)
             ) {
-                // Top curved header
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
