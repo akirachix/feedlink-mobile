@@ -95,7 +95,6 @@ class ProfileViewModel(
                 if (response.isSuccessful) {
                     val updatedProfile = response.body()
                     if (updatedProfile != null) {
-                        // ✅ Only append timestamp if a new image was uploaded
                         val finalProfile = if (selectedImageFile != null) {
                             updatedProfile.copy(
                                 profilePicture = updatedProfile.profilePicture?.let { url ->
