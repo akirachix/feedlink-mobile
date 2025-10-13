@@ -1,6 +1,5 @@
 package com.feedlink.feedlink.screens
 
-
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -43,28 +42,21 @@ fun ViewProfileScreen(
 ) {
     val context = LocalContext.current
 
-
     val userProfile by viewModel.userProfile.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
 
-
     var showLogoutDialog by remember { mutableStateOf(false) }
 
 
-    LaunchedEffect(userProfile == null) {
-        if (userProfile == null) {
-            val userIdStr = TokenManager.getUserId()
-            Log.d("Profile", "Saved user ID: $userIdStr")
-            val userId = userIdStr?.toIntOrNull()
-            Log.d("Profile", "Parsed user ID: $userId")
+    LaunchedEffect(Unit) {
+        val userIdStr = TokenManager.getUserId()
+        val userId = userIdStr?.toIntOrNull()
+        if (userId != null) {
 
-
-            if (userId != null) {
-                viewModel.fetchUserProfile(userId)
-            } else {
-                Log.e("Profile", "User ID missing or invalid")
-            }
+            viewModel.fetchUserProfile(userId, forceRefresh = true)
+        } else {
+            Log.e("Profile", "User ID missing or invalid")
         }
     }
 
@@ -75,7 +67,6 @@ fun ViewProfileScreen(
             viewModel.clearError()
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -112,10 +103,8 @@ fun ViewProfileScreen(
                 isLoading && userProfile == null ->
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
 
-
                 userProfile != null ->
                     ProfileContent(profile = userProfile!!, onNavigateToEdit = onNavigateToEdit)
-
 
                 error != null ->
                     Column(
@@ -127,18 +116,16 @@ fun ViewProfileScreen(
                         Spacer(Modifier.height(8.dp))
                         Button(onClick = {
                             TokenManager.getUserId()?.toIntOrNull()?.let { id ->
-                                viewModel.fetchUserProfile(id)
+                                viewModel.fetchUserProfile(id, forceRefresh = true)
                             }
                         }) { Text("Retry") }
                     }
-
 
                 else ->
                     Text("No profile data.", Modifier.align(Alignment.Center))
             }
         }
     }
-
 
     if (showLogoutDialog) {
         AlertDialog(
@@ -163,12 +150,19 @@ fun ViewProfileScreen(
     }
 }
 
-
 @Composable
 fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
     val context = LocalContext.current
     val darkGreenColor = Color(0xFF234B06)
 
+    // ✅ Use profile's profilePicture as the key (more precise)
+    var imageCacheBuster by remember(profile.profilePicture) {
+        mutableStateOf(System.currentTimeMillis())
+    }
+
+    val imageUrl = profile.profilePicture?.trim()?.let { url ->
+        if (url.startsWith("http")) "$url?cb=$imageCacheBuster" else url
+    } ?: "https://via.placeholder.com/150"
 
     Column(
         modifier = Modifier
@@ -183,7 +177,7 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             contentAlignment = Alignment.BottomEnd
         ) {
             SubcomposeAsyncImage(
-                model = profile.profilePicture?.trim(),
+                model = imageUrl,
                 loading = {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -253,22 +247,16 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             }
         }
 
-
         Spacer(modifier = Modifier.height(24.dp))
-
 
         Text(
             text = "${profile.firstName ?: ""} ${profile.lastName ?: ""}".trim(),
             style = MaterialTheme.typography.headlineSmall,
             color = darkGreenColor,
             fontWeight = FontWeight.Bold,
-
-
-            )
-
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
-
 
         if (!profile.email.isNullOrBlank()) {
             Text(
@@ -278,11 +266,8 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
-
-
-
-
     }
+
     @Composable
     fun ProfileDetailRow(label: String, value: String?) {
         Row(
@@ -303,7 +288,5 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
                 modifier = Modifier.weight(0.7f)
             )
         }
-    }}
-
-
-
+    }
+}

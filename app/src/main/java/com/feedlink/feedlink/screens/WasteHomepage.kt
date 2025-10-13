@@ -133,7 +133,7 @@ fun RecyclerHome(
         AlertDialog(
             onDismissRequest = { viewModel.dismissClaimSuccessDialog() },
             title = { Text("Claim Successful") },
-            text = { Text("You have successfully claimed this waste item. Please check your email for the pickup PIN.") },
+            text = { Text("You have successfully claimed this waste item.") },
             confirmButton = {
                 Button(onClick = { viewModel.dismissClaimSuccessDialog() }) {
                     Text("OK")
@@ -162,7 +162,7 @@ fun RecyclerHome(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Available Inedible Waste",
+                            text = "Welcome Back!",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = Color.Black
@@ -176,7 +176,7 @@ fun RecyclerHome(
                             Icon(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = "Refresh",
-                                tint = if (isRefreshing) Color.Gray else Color(0xFF4CAF50)
+                                tint = if (isRefreshing) Color.Gray else Color(0xFF234B06)
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
@@ -190,11 +190,12 @@ fun RecyclerHome(
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Profile",
-                                tint = Color.Green,
+                                tint = Color(0xFF2E4E1E),
                                 modifier = Modifier
                                     .size(24.dp)
                                     .align(Alignment.Center)
                             )
+
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -218,8 +219,8 @@ fun RecyclerHome(
                     colors = TextFieldDefaults.colors(
                         unfocusedContainerColor = Color.White,
                         focusedContainerColor = Color.White,
-                        unfocusedIndicatorColor = Color(0xFF4CAF50),
-                        focusedIndicatorColor = Color(0xFF4CAF50),
+                        unfocusedIndicatorColor = Color(0xFF234B06),
+                        focusedIndicatorColor = Color(0xFF234B06),
                         unfocusedLeadingIconColor = Color(0xFF4CAF50),
                         focusedLeadingIconColor = Color(0xFF4CAF50)
                     ),
@@ -265,7 +266,7 @@ fun RecyclerHome(
                                     .fillMaxWidth()
                                     .align(Alignment.TopCenter)
                                     .padding(top = 8.dp),
-                                color = Color(0xFF4CAF50)
+                                color = Color(0xFF234B06)
                             )
                         }
                     }
@@ -320,7 +321,7 @@ fun RecyclerHome(
                                     .fillMaxWidth()
                                     .align(Alignment.TopCenter)
                                     .padding(top = 8.dp),
-                                color = Color(0xFF4CAF50)
+                                color = Color(0xFF234B06)
                             )
                         }
                     }
@@ -376,7 +377,7 @@ fun ListingItem(
             Text(
                 text = "Type: ${listing.productType?.replaceFirstChar { it.uppercase() } ?: "Unknown"}",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF4CAF50),
+                color = Color(0xFF234B06),
                 fontSize = 12.sp,
                 maxLines = 1
             )
@@ -400,7 +401,7 @@ fun ListingItem(
                     .fillMaxWidth()
                     .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isClaimed) Color.Gray else Color(0xFF4CAF50),
+                    containerColor = if (isClaimed) Color.Gray else Color(0xFF234B06),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(8.dp),
@@ -452,7 +453,7 @@ fun ListingDetailsPopup(
                         text = "Item Details",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
-                        color = Color(0xFF4CAF50)
+                        color = Color(0xFF234B06)
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
@@ -488,7 +489,7 @@ fun ListingDetailsPopup(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isClaimed) Color.Gray else Color(0xFF4CAF50),
+                        containerColor = if (isClaimed) Color.Gray else Color(0xFF234B06),
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(8.dp),

@@ -34,9 +34,7 @@ class ProfileViewModel(
 
     private var selectedImageFile: File? = null
 
-
     fun fetchUserProfile(userId: Int, forceRefresh: Boolean = false) {
-        // Convert current profile.id (String) to Int for comparison
         val currentProfileId = _userProfile.value?.id?.toIntOrNull()
         if (!forceRefresh && currentProfileId == userId) return
 
@@ -57,7 +55,6 @@ class ProfileViewModel(
             }
         }
     }
-
 
     fun onImageSelected(context: Context, uri: Uri?) {
         selectedImageFile = null
@@ -96,9 +93,29 @@ class ProfileViewModel(
                 )
 
                 if (response.isSuccessful) {
-                    _userProfile.value = response.body()
-                    _profileUpdateSuccess.value = true
-                    fetchUserProfile(userId, forceRefresh = true)
+                    val updatedProfile = response.body()
+                    if (updatedProfile != null) {
+                        // ✅ Only append timestamp if a new image was uploaded
+                        val finalProfile = if (selectedImageFile != null) {
+                            updatedProfile.copy(
+                                profilePicture = updatedProfile.profilePicture?.let { url ->
+                                    url.trim().takeIf { it.isNotBlank() }?.let { trimmedUrl ->
+                                        if (trimmedUrl.startsWith("http")) {
+                                            "$trimmedUrl?cb=${System.currentTimeMillis()}"
+                                        } else {
+                                            trimmedUrl
+                                        }
+                                    }
+                                }
+                            )
+                        } else {
+                            updatedProfile
+                        }
+                        _userProfile.value = finalProfile
+                        _profileUpdateSuccess.value = true
+                    } else {
+                        _error.value = "Update succeeded but no profile returned"
+                    }
                 } else {
                     val err = response.errorBody()?.string() ?: "Unknown"
                     Log.e("VM", "Update failed: ${response.code()}, $err")

@@ -129,6 +129,28 @@ class AuthRepository(
     }
 
 
+    suspend fun fetchUserRole(userId: Int): Result<String> {
+        return try {
+            val response = withContext(Dispatchers.IO) {
+                apiInterface.getUserProfileById(userId)
+            }
+            if (response.isSuccessful && response.body() != null) {
+                val role = response.body()!!.role
+                if (!role.isNullOrBlank()) {
+                    Result.success(role.lowercase().trim())
+                } else {
+                    Result.failure(Exception("Role is missing in user profile"))
+                }
+            } else {
+                val error = response.errorBody()?.string() ?: "Unknown error"
+                Result.failure(Exception("Failed to load user role: $error"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+
     private fun parseSignupError(errorBody: String?, statusCode: Int): String {
         Log.d("AuthRepository", "Parsing Signup Error: $errorBody, Code: $statusCode")
         if (errorBody == null) return "Signup failed (Code: $statusCode). Please try again."

@@ -127,7 +127,7 @@ fun WasteCollection(
                             onClick = onContinueClaimingClick,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF4CAF50),
+                                containerColor = Color(0xFF234B06),
                                 contentColor = Color.White
                             ),
                             shape = RoundedCornerShape(8.dp)
@@ -211,7 +211,7 @@ fun WasteClaimItem(
                     Icon(
                         imageVector = Icons.Default.AccessTime,
                         contentDescription = "Timer",
-                        tint = if (claim.wasteId != null) Color(0xFF4CAF50) else Color.Gray
+                        tint = if (claim.wasteId != null) Color(0xFF234B06) else Color.Gray
                     )
                 }
             }
