@@ -1,5 +1,6 @@
 package com.feedlink.feedlink.screens
 
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,6 +31,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import kotlin.math.min
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(
@@ -53,6 +55,7 @@ fun TimerScreen(
         return
     }
 
+
     val wasteClaimState by viewModel.wasteClaim.collectAsState()
     val timerExpired by viewModel.timerExpired.collectAsState()
     val isOverdue by viewModel.isOverdue.collectAsState()
@@ -60,6 +63,7 @@ fun TimerScreen(
     val totalTime by viewModel.totalTimeInSeconds.collectAsState()
     var timeLeft by remember { mutableStateOf(0) }
     var isRunning by remember { mutableStateOf(true) }
+
 
     LaunchedEffect(pickupDeadline) {
         if (pickupDeadline != null) {
@@ -71,6 +75,7 @@ fun TimerScreen(
         }
     }
 
+
     LaunchedEffect(key1 = isRunning, key2 = timeLeft) {
         if (isRunning && timeLeft > 0) {
             while (isRunning && timeLeft > 0) {
@@ -78,12 +83,14 @@ fun TimerScreen(
                 timeLeft--
             }
 
+
             if (timeLeft == 0) {
                 isRunning = false
                 viewModel.onTimerExpired()
             }
         }
     }
+
 
     Box(
         modifier = Modifier
@@ -102,6 +109,7 @@ fun TimerScreen(
                 contentScale = ContentScale.FillBounds
             )
 
+
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
@@ -115,6 +123,7 @@ fun TimerScreen(
                 )
             }
 
+
             Text(
                 text = "Timer",
                 style = MaterialTheme.typography.displayMedium.copy(
@@ -126,6 +135,7 @@ fun TimerScreen(
                     .padding(top = 80.dp)
             )
         }
+
 
         Column(
             modifier = Modifier
@@ -147,9 +157,11 @@ fun TimerScreen(
                 wasteClaimState?.isSuccess == true -> {
                     val claim = wasteClaimState!!.getOrNull()!!
 
+
                     val wasteDetails = "Claim ID: ${claim.wasteId}\n" +
                             "Status: ${claim.claimStatus}\n" +
                             "Claimed at: ${DateUtils.formatClaimTime(claim.claimTime)}"
+
 
                     Text(
                         text = wasteDetails,
@@ -160,6 +172,7 @@ fun TimerScreen(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
+
                     pickupDeadline?.let { deadline ->
                         Text(
                             text = "Pickup deadline: ${DateUtils.formatDeadline(deadline)}",
@@ -169,6 +182,7 @@ fun TimerScreen(
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
                     }
+
 
                     Box(
                         contentAlignment = Alignment.Center,
@@ -184,6 +198,7 @@ fun TimerScreen(
                             val radius = min(size.width, size.height) / 2 - 16.dp.toPx()
                             val strokeWidth = 16.dp.toPx()
 
+
                             drawArc(
                                 color = Color.LightGray,
                                 startAngle = 270f,
@@ -194,7 +209,9 @@ fun TimerScreen(
                                 style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                             )
 
+
                             val progress = if (timerExpired || isOverdue) 0f else timeLeft.toFloat() / totalTime
+
 
                             drawArc(
                                 color = if (timerExpired || isOverdue) Color.Gray else Color(0xFFFF9800),
@@ -207,14 +224,16 @@ fun TimerScreen(
                             )
                         }
 
+
                         Text(
-                            text = if (isOverdue) "00:00" else if (timerExpired) "00:00" else DateUtils.formatTime(timeLeft),
+                            text = if (isOverdue) "00:00:00" else if (timerExpired) "00:00:00" else DateUtils.formatTimerTime(timeLeft),
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 color = if (timerExpired || isOverdue) Color.Gray else Color(0xFF4CAF50),
                                 fontWeight = FontWeight.Bold
                             )
                         )
                     }
+
 
                     if (isOverdue) {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -256,7 +275,9 @@ fun TimerScreen(
     }
 }
 
+
 @Composable
 private fun Float.toPx(): Float {
     return this * (LocalDensity.current.density)
 }
+
