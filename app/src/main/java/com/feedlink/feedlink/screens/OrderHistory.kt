@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +44,10 @@ fun OrderHistory(
     val uiState by viewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
 
+    LaunchedEffect(Unit) {
+        viewModel.fetchOrdersForCurrentUser()
+    }
+
     val filteredOrders = when (val currentState = uiState) {
         is OrderUiState.Success -> {
             currentState.orders.filter { order ->
@@ -60,7 +66,7 @@ fun OrderHistory(
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
-                selected = "orders", 
+                selected = "orders",
                 onHomeClick = onNavigateToHome,
                 onCartClick = {},
                 onOrdersClick = onNavigateToOrders,
@@ -186,9 +192,15 @@ fun OrderHistory(
                             ) {
                                 Text("Failed to load history: ${currentState.message}")
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Button(onClick = { viewModel.fetchAllOrders() }) {
+                                Button(onClick = { viewModel.fetchOrdersForCurrentUser() }) {
                                     Text("Retry")
                                 }
+                            }
+                        }
+
+                        is OrderUiState.SuccessSingle -> {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
                             }
                         }
                     }
@@ -269,13 +281,21 @@ private fun formatDateTime(dateTimeString: String?): String {
     if (dateTimeString == null) return "Unknown date"
 
     return try {
-        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault())
         parser.timeZone = TimeZone.getTimeZone("UTC")
         val date = parser.parse(dateTimeString) ?: return "Unknown date"
         val formatter = SimpleDateFormat("h:mm a, MMM d", Locale.getDefault())
         formatter.format(date)
     } catch (e: Exception) {
-        Log.e("OrderHistory", "Error formatting date time: $dateTimeString", e)
-        "Unknown date"
+        try {
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+            parser.timeZone = TimeZone.getTimeZone("UTC")
+            val date = parser.parse(dateTimeString) ?: return "Unknown date"
+            val formatter = SimpleDateFormat("h:mm a, MMM d", Locale.getDefault())
+            formatter.format(date)
+        } catch (e2: Exception) {
+            Log.e("OrderHistory", "Error formatting date time: $dateTimeString", e2)
+            "Unknown date"
+        }
     }
 }

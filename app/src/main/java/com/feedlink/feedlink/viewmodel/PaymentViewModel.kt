@@ -3,7 +3,6 @@ package com.feedlink.feedlink.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.feedlink.feedlink.api.ApiInterface
-import com.feedlink.feedlink.network.OrderStatusResponse
 import com.feedlink.feedlink.network.PaymentStatusResponse
 import com.feedlink.feedlink.network.StkPushRequest
 import kotlinx.coroutines.delay

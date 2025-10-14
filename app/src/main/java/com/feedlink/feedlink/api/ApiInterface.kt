@@ -13,6 +13,7 @@ import retrofit2.http.*
 
 import com.feedlink.feedlink.model.UserProfile
 import com.feedlink.feedlink.network.Order
+import com.feedlink.feedlink.network.OrderCreationRequest
 import com.feedlink.feedlink.network.OrderStatusResponse
 import com.feedlink.feedlink.network.PaymentStatusResponse
 import com.feedlink.feedlink.network.StkPushRequest
@@ -77,13 +78,8 @@ interface ApiInterface {
     @POST("verification/")
     suspend fun verification(@Body request: VerificationRequest): Response<VerificationResponse>
 
-
     @GET("listings/")
     suspend fun getAvailableListings(): List<Listing>
-
-
-
-
 
     @GET("listings/{id}")
     suspend fun getListingById(@Path("id") listingId: Int): Listing
@@ -104,5 +100,15 @@ interface ApiInterface {
     ): Response<PaymentStatusResponse>
 
     @GET("orders/")
-    suspend fun getOrders(): List<Order>
+    suspend fun getAllOrders(): List<Order>
+
+
+    @POST("orders/")
+    suspend fun createOrder(@Body orderRequest: OrderCreationRequest): Response<Order>
+
+    @GET("orders/{order_id}/")
+    suspend fun getOrderById(@Path("order_id") orderId: Int): Response<Order>
+
+
+
 }

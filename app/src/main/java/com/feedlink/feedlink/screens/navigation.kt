@@ -1,5 +1,4 @@
 package com.feedlink.feedlink.screens
-
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
@@ -24,7 +23,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -156,11 +154,17 @@ fun FeedLinkNavHost(
             )
         }
 
-        composable(Screen.OrderConfirmed.route) {
-            OrderConfirmedScreen(navController = navController)
+        composable(
+            route = Screen.OrderConfirmed.route,
+            arguments = listOf(navArgument("orderId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+
+            OrderConfirmedScreen(
+                navController = navController,
+                orderId = orderId
+            )
         }
-
-
 
 
         composable(Screen.AuthChoice.route) {
@@ -296,22 +300,22 @@ fun FeedLinkNavHost(
         }
 
 
-
-
         composable(Screen.Cart.route) {
-            val cartViewModel: CartViewModel = viewModel()
-            val totalPrice = cartViewModel.totalPrice
+            val cartViewModel: CartViewModel = koinViewModel()
+
             CartScreen(
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
                 onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) },
-                onProceedToCheckout = {
-                    val orderId = 48
-                    val totalAmount = totalPrice
+
+                onNavigateToPayment = { orderId, totalAmount ->
                     navController.navigate(Screen.PaymentMethod.createRoute(orderId, totalAmount))
-                }
+                },
+
+                cartViewModel = cartViewModel
             )
         }
+
 
 
 

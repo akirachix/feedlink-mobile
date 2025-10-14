@@ -1,15 +1,18 @@
 package com.feedlink.feedlink.di
+import android.content.Context
 import com.feedlink.feedlink.api.ApiInterface
 import com.feedlink.feedlink.api.AuthInterceptor
+import com.feedlink.feedlink.auth.TokenManager
 import com.feedlink.feedlink.repository.ProfileRepository
 import com.feedlink.feedlink.viewmodel.ProfileViewModel
-
 import com.feedlink.feedlink.repository.ListingRepository
 import com.feedlink.feedlink.repository.WasteClaimRepository
 import com.feedlink.feedlink.viewmodel.NotificationViewModel
 import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import com.feedlink.feedlink.repository.AuthRepository
 import com.feedlink.feedlink.repository.ListingsRepository
+import com.feedlink.feedlink.repository.OrderRepository
+import com.feedlink.feedlink.viewmodel.CartViewModel
 import com.feedlink.feedlink.viewmodel.ForgotPasswordViewModel
 import com.feedlink.feedlink.viewmodel.ListingViewModel
 import com.feedlink.feedlink.viewmodel.ListingsViewModel
@@ -21,6 +24,7 @@ import com.feedlink.feedlink.viewmodel.SignupViewModel
 import com.feedlink.feedlink.viewmodel.TimerViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -67,6 +71,16 @@ val repositoryModule = module {
     single { WasteClaimRepository(get()) }
     single { ListingRepository(get()) }
     single { ListingsRepository(get()) }
+    single { OrderRepository(get()) }
+
+
+
+}
+val appModule = module {
+    single {
+        val context: Context = androidContext()
+        TokenManager.apply { initialize(context) }
+    }
 }
 
 val viewModelModule = module {
@@ -81,8 +95,9 @@ val viewModelModule = module {
     viewModel { (claimId: Int) -> TimerViewModel(get(), claimId) }
     viewModel { ProfileViewModel(get()) }
     viewModel { PaymentViewModel(get()) }
-    viewModel { OrderViewModel(get()) }
+    viewModel { OrderViewModel(get(), get()) }
+    viewModel { CartViewModel(get()) }
 
 }
 
-val appModules = listOf(networkModule, repositoryModule, viewModelModule)
+val appModules = listOf(networkModule, repositoryModule, viewModelModule, appModule)
