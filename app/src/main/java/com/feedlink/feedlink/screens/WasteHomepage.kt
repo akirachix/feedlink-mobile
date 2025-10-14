@@ -45,6 +45,8 @@ import com.feedlink.feedlink.model.Listing
 import com.feedlink.feedlink.utils.NotificationManager
 import com.feedlink.feedlink.viewmodel.ListingUiState
 import com.feedlink.feedlink.viewmodel.ListingViewModel
+import com.feedlink.feedlink.location.LocationManager
+import com.feedlink.feedlink.location.RequestLocationPermission
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -69,9 +71,11 @@ fun RecyclerHome(
     var selectedListing by remember { mutableStateOf<Listing?>(null) }
 
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchInedibleListings()
-    }
+    // Location state variables
+    val locationManager = remember { LocationManager(context) }
+    var hasLocationPermission by remember { mutableStateOf(locationManager.hasLocationPermission()) }
+    var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    var locationPermissionRequested by remember { mutableStateOf(false) }
 
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -116,6 +120,27 @@ fun RecyclerHome(
                 viewModel.resetNewListingFlag()
             }
         }
+    }
+
+
+    // Add location permission request
+    RequestLocationPermission(
+        onPermissionResult = { location ->
+            userLocation = location
+            hasLocationPermission = location != null
+        },
+        onPermissionRequestReady = { launchPermissionRequest ->
+            if (!hasLocationPermission && !locationPermissionRequested) {
+                locationPermissionRequested = true
+                launchPermissionRequest()
+            }
+        }
+    )
+
+
+    // Trigger the fetch when the user's location is available
+    LaunchedEffect(userLocation) {
+        viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
     }
 
 
@@ -170,7 +195,10 @@ fun RecyclerHome(
                     },
                     actions = {
                         IconButton(
-                            onClick = { viewModel.refreshListings() },
+                            onClick = {
+                                // On refresh, we re-fetch with the last known location
+                                viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
+                            },
                             enabled = !isRefreshing
                         ) {
                             Icon(
@@ -195,7 +223,6 @@ fun RecyclerHome(
                                     .size(24.dp)
                                     .align(Alignment.Center)
                             )
-
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -229,6 +256,21 @@ fun RecyclerHome(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = {})
                 )
+                if (userLocation != null) {
+                    Text(
+                        text = "Showing items within a 5km radius",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF234B06)
+                    )
+                } else {
+                    Text(
+                        text = "Location access needed to show nearby items",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
             }
         }
     ) { padding ->
@@ -281,19 +323,26 @@ fun RecyclerHome(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
+                                val emptyMessage = when {
+                                    userLocation == null -> "Please enable location to see nearby items."
+                                    else -> "No available inedible items within a 5km radius."
+                                }
                                 Text(
-                                    text = if (searchQuery.isEmpty()) "No available inedible waste items" else "No matching inedible items found",
+                                    text = if (searchQuery.isEmpty()) emptyMessage else "No matching inedible items found nearby",
                                     fontSize = 16.sp,
                                     color = Color.Gray
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Check back later for new waste items",
+                                    text = "Check back later or try refreshing",
                                     fontSize = 14.sp,
                                     color = Color.Gray
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Button(onClick = { viewModel.refreshListings() }) {
+                                Button(onClick = {
+                                    // On refresh, we re-fetch with the last known location
+                                    viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
+                                }) {
                                     Text("Refresh")
                                 }
                             }
@@ -334,7 +383,10 @@ fun RecyclerHome(
                     ) {
                         Text("Failed to load items: ${currentState.message}")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.refreshListings() }) { Text("Retry") }
+                        Button(onClick = {
+                            // On retry, we re-fetch with the last known location
+                            viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
+                        }) { Text("Retry") }
                     }
                 }
             }
@@ -559,4 +611,6 @@ private fun formatDateTime(dateString: String): String {
         dateString
     }
 }
+
+
 

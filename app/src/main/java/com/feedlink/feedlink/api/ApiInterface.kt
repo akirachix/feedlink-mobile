@@ -57,11 +57,21 @@ interface ApiInterface {
     @POST("wasteclaims/")
     suspend fun createWasteClaim(@Body claim: WasteClaim): WasteClaim
 
+
+
     @PUT("waste-claims/{id}/status")
     suspend fun updateClaimStatus(
         @Path("id") claimId: Int,
         @Body statusRequest: StatusRequest
     ): WasteClaim
+
+
+    @PATCH("wasteclaims/{wasteId}/")
+    suspend fun updateWasteClaimStatus(
+        @Path("wasteId") wasteId: Int,
+        @Body status: Map<String, String>
+    ): Response<Unit>
+
 
     @POST("signup/")
     suspend fun signup(@Body request: SignUpRequest): Response<SignUpResponse>

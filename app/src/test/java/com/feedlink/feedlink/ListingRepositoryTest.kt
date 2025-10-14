@@ -1,6 +1,5 @@
 package com.feedlink.feedlink.repository
 
-import com.feedlink.feedlink.TestData
 import com.feedlink.feedlink.api.ApiInterface
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -23,7 +22,7 @@ class ListingRepositoryTest {
     fun testGetAvailableListingsSuccess() = runTest {
         coEvery { mockApiInterface.getAvailableListings() } returns TestData.mockListings
 
-        val result = mockRepository.getAvailableListings()
+        val result = mockRepository.getAvailableListings(latitude, longitude)
 
         TestCase.assertTrue(result.isSuccess)
         TestCase.assertEquals(TestData.mockListings, result.getOrNull())
@@ -34,7 +33,7 @@ class ListingRepositoryTest {
         val exception = RuntimeException("Network error")
         coEvery { mockApiInterface.getAvailableListings() } throws exception
 
-        val result = mockRepository.getAvailableListings()
+        val result = mockRepository.getAvailableListings(latitude, longitude)
 
         TestCase.assertTrue(result.isFailure)
         TestCase.assertEquals(exception, result.exceptionOrNull())
