@@ -155,7 +155,6 @@ fun ProfileContent(profile: UserProfile, onNavigateToEdit: (Int) -> Unit) {
     val context = LocalContext.current
     val darkGreenColor = Color(0xFF234B06)
 
-    // ✅ Use profile's profilePicture as the key (more precise)
     var imageCacheBuster by remember(profile.profilePicture) {
         mutableStateOf(System.currentTimeMillis())
     }
