@@ -72,6 +72,9 @@ fun EditProfileFormScreen(
     var uiLastName by remember { mutableStateOf("") }
     var uiEmail by remember { mutableStateOf("") }
 
+
+    var localImageUri by remember { mutableStateOf<Uri?>(null) }
+
     LaunchedEffect(userProfile) {
         userProfile?.let { profile ->
             uiFirstName = profile.firstName ?: ""
@@ -79,30 +82,44 @@ fun EditProfileFormScreen(
             uiEmail = profile.email ?: ""
         }
     }
-    val imageToDisplay by remember(userProfile?.profilePicture) {
-        mutableStateOf(userProfile?.profilePicture ?: "https://via.placeholder.com/150")
+
+
+    val imageToDisplay = when {
+        localImageUri != null -> localImageUri.toString()
+        !userProfile?.profilePicture.isNullOrBlank() -> {
+            val url = userProfile!!.profilePicture!!.trim()
+            if (url.startsWith("http")) {
+                "$url?cb=${System.currentTimeMillis()}"
+            } else {
+                url
+            }
+        }
+        else -> "https://via.placeholder.com/150"
     }
+
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
+            localImageUri = uri
             profileViewModel.onImageSelected(context, it)
         }
     }
+
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap: Bitmap? ->
         bitmap?.let {
             val file = saveBitmapToTempFile(context, it)
             if (file != null) {
-                profileViewModel.onImageSelected(context, Uri.fromFile(file))
+                val uri = Uri.fromFile(file)
+                localImageUri = uri
+                profileViewModel.onImageSelected(context, uri)
             }
         }
     }
-
-
     LaunchedEffect(userIdToEdit) {
         val currentProfileId = userProfile?.id?.toIntOrNull()
         if (currentProfileId != userIdToEdit) {
@@ -113,6 +130,9 @@ fun EditProfileFormScreen(
     LaunchedEffect(updateSuccess) {
         if (updateSuccess) {
             Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+
+            localImageUri = null
+
             profileViewModel.resetUpdateSuccessFlag()
             onProfileUpdated()
         }

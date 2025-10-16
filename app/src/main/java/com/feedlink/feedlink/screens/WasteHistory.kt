@@ -124,7 +124,7 @@ fun WasteHistory(
                 text = "Collections",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = Color(0xFF4CAF50),
+                color = Color(0xFF234B06),
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
@@ -221,7 +221,7 @@ fun HistoryClaimItem(claim: WasteClaim, modifier: Modifier = Modifier) {
                     text = claim.claimStatus ?: "Unknown",
                     fontSize = 14.sp,
                     color = when (claim.claimStatus) {
-                        "collected" -> Color(0xFF4CAF50)
+                        "collected" -> Color(0xFF234B06)
                         "pending" -> Color(0xFFFFC107)
                         else -> Color.Gray
                     }

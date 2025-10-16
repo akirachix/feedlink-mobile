@@ -2,7 +2,6 @@
 package com.feedlink.feedlink.screens
 
 import android.content.Context
-import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,9 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.edit
 import com.feedlink.feedlink.R
-import com.feedlink.feedlink.auth.TokenManager
 import com.feedlink.feedlink.ui.theme.Green
 import com.feedlink.feedlink.ui.theme.Orange
 import com.feedlink.feedlink.viewmodel.SigninViewModel
@@ -59,21 +59,20 @@ fun SignInScreen(
     var isEmailError by remember { mutableStateOf(false) }
     var isPasswordError by remember { mutableStateOf(false) }
 
-    LaunchedEffect(signInResponse) {
-        signInResponse?.let { response ->
-            val prefs = context.getSharedPreferences("FEEDLINK_PREFS", Context.MODE_PRIVATE)
-            val savedRole = prefs.getString("USER_ROLE", "buyer") ?: "buyer"
+    LaunchedEffect(viewModel.userRole.value) {
+        viewModel.userRole.value?.let { role ->
+            val response = viewModel.signInResponse.value ?: return@LaunchedEffect
 
-
-            prefs.edit {
+            context.getSharedPreferences("FEEDLINK_PREFS", Context.MODE_PRIVATE).edit {
                 putString("ACCESS_TOKEN", response.token)
                 putString("EMAIL", response.email)
-                putString("USER_ROLE", savedRole)
+                putString("USER_ROLE", role)
                 putString("USER_ID", response.userId)
             }
 
-            when (savedRole) {
+            when (role) {
                 "recycler" -> onNavigateToRecyclerHome()
+                "buyer" -> onNavigateToHome()
                 else -> onNavigateToHome()
             }
         }
@@ -132,10 +131,14 @@ fun SignInScreen(
                         Text(
                             "Enter email",
                             fontStyle = FontStyle.Italic,
-                            color = Green.copy(alpha = 0.7f)
+                            color = Gray
                         )
                     },
                     singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     isError = isEmailError,
                     modifier = Modifier.fillMaxWidth(),
@@ -163,10 +166,14 @@ fun SignInScreen(
                         Text(
                             "Enter password",
                             fontStyle = FontStyle.Italic,
-                            color = Green.copy(alpha = 0.7f)
+                            color = Gray
                         )
                     },
                     singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {

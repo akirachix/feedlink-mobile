@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -38,8 +39,6 @@ import org.koin.androidx.compose.getViewModel
 @Composable
 fun SignUpScreen(
     userRole: String,
-    onNavigateToHome: () -> Unit,
-    onNavigateToRecyclerHome: () -> Unit,
     onSignInClick: () -> Unit,
 ) {
     val viewModel: SignupViewModel = getViewModel()
@@ -67,21 +66,12 @@ fun SignUpScreen(
 
     LaunchedEffect(signupSuccess) {
         signupSuccess?.let { response ->
-
-            val  signupRole = userRole
             context.getSharedPreferences("FEEDLINK_PREFS", Context.MODE_PRIVATE).edit {
                 putString("ACCESS_TOKEN", response.token)
                 putString("EMAIL", response.email)
-                putString("USER_ROLE", signupRole)
                 putString("USER_ID", response.userId)
             }
-
-            when (response.role) {
-                "buyer" -> onNavigateToHome()
-                    "recycler" -> onNavigateToRecyclerHome()
-                else -> {
-                }
-            }
+            onSignInClick()
         }
     }
 
@@ -137,7 +127,11 @@ fun SignUpScreen(
                 OutlinedTextField(
                     value = firstName,
                     onValueChange = { firstName = it },
-                    placeholder = { Text("Enter first name", fontStyle = FontStyle.Italic) },
+                    placeholder = { Text("Enter first name", fontStyle = FontStyle.Italic, color = Color.Gray) },
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     singleLine = true,
                     isError = isFirstNameError,
                     modifier = Modifier.fillMaxWidth(),
@@ -161,8 +155,12 @@ fun SignUpScreen(
                 OutlinedTextField(
                     value = lastName,
                     onValueChange = { lastName = it },
-                    placeholder = { Text("Enter last name", fontStyle = FontStyle.Italic) },
+                    placeholder = { Text("Enter last name", fontStyle = FontStyle.Italic, color = Color.Gray) },
                     singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     isError = isLastNameError,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(6.dp),
@@ -185,8 +183,12 @@ fun SignUpScreen(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
-                    placeholder = { Text("Enter email", fontStyle = FontStyle.Italic) },
+                    placeholder = { Text("Enter email", fontStyle = FontStyle.Italic, color = Color.Gray) },
                     singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     isError = isEmailError,
                     modifier = Modifier.fillMaxWidth(),
@@ -210,8 +212,12 @@ fun SignUpScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    placeholder = { Text("Enter password", fontStyle = FontStyle.Italic) },
+                    placeholder = { Text("Enter password", fontStyle = FontStyle.Italic, color = Color.Gray) },
                     singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -243,8 +249,12 @@ fun SignUpScreen(
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    placeholder = { Text("Confirm password", fontStyle = FontStyle.Italic) },
+                    placeholder = { Text("Confirm password", fontStyle = FontStyle.Italic, color =Color.Gray) },
                     singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
@@ -349,6 +359,3 @@ fun SignUpScreen(
         }
     }
 }
-
-
-

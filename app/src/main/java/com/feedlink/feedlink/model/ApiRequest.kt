@@ -19,7 +19,7 @@ data class SignUpRequest(
     val role: String,
 
 
-)
+    )
 
 data class SignInRequest(
     val email: String,
@@ -44,4 +44,3 @@ data class VerificationRequest(
     @SerializedName("otp")
     val otp: String
 )
-

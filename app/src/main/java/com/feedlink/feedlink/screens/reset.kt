@@ -12,9 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -101,10 +103,14 @@ fun ResetPasswordScreen(
                     Text(
                         "Create new password",
                         fontStyle = FontStyle.Italic,
-                        color = Green.copy(alpha = 0.7f)
+                        color = Gray
                     )
                 },
                 singleLine = true,
+                textStyle = TextStyle(
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                ),
                 visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
@@ -143,10 +149,14 @@ fun ResetPasswordScreen(
                     Text(
                         "Confirm new password",
                         fontStyle = FontStyle.Italic,
-                        color = Green.copy(alpha = 0.7f)
+                        color = Gray
                     )
                 },
                 singleLine = true,
+                textStyle = TextStyle(
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                ),
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {

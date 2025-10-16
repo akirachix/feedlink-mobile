@@ -1,5 +1,11 @@
 package com.feedlink.feedlink.model
 
+
+import com.google.gson.annotations.SerializedName
+
+
 data class StatusRequest(
-    val status: String
+    @SerializedName("claim_status")
+    val claimStatus: String
 )
+

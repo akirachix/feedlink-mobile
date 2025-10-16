@@ -52,7 +52,7 @@ class ListingViewModelTest {
         mockListingRepository = mockk()
         mockWasteClaimRepository = mockk()
 
-        coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
+        coEvery { mockListingRepository.getAvailableListings(latitude, longitude) } returns Result.success(TestData.mockListings)
         coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
         viewModel = ListingViewModel(mockListingRepository, mockWasteClaimRepository, testDispatcher)
@@ -73,10 +73,10 @@ class ListingViewModelTest {
 
     @Test
     fun `fetchInedibleListingsSuccess should update uiState to Success`() = runTest {
-        coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
+        coEvery { mockListingRepository.getAvailableListings(latitude, longitude) } returns Result.success(TestData.mockListings)
         coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
-        viewModel.fetchInedibleListings()
+        viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
 
         val uiState = viewModel.uiState.value
         assertTrue(uiState is ListingUiState.Success)
@@ -87,10 +87,10 @@ class ListingViewModelTest {
     @Test
     fun `fetchInedibleListingsFailure should update uiState to Error`() = runTest {
         val exception = RuntimeException("Network error")
-        coEvery { mockListingRepository.getAvailableListings() } returns Result.failure(exception)
+        coEvery { mockListingRepository.getAvailableListings(latitude, longitude) } returns Result.failure(exception)
         coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
-        viewModel.fetchInedibleListings()
+        viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
 
         val uiState = viewModel.uiState.value
         assertTrue(uiState is ListingUiState.Error)
@@ -102,7 +102,7 @@ class ListingViewModelTest {
     fun `claimListingSuccess should update claimedListings and show dialog`() = runTest {
         val listingId = 1
         coEvery { mockWasteClaimRepository.addWasteClaim(any<WasteClaim>()) } returns Result.success(TestData.mockWasteClaims[0])
-        coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
+        coEvery { mockListingRepository.getAvailableListings(latitude, longitude) } returns Result.success(TestData.mockListings)
         coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
         viewModel.claimListing(listingId)
@@ -115,7 +115,7 @@ class ListingViewModelTest {
     fun `dismissClaimSuccessDialog should hide the dialog`() = runTest {
         val listingId = 1
         coEvery { mockWasteClaimRepository.addWasteClaim(any<WasteClaim>()) } returns Result.success(TestData.mockWasteClaims[0])
-        coEvery { mockListingRepository.getAvailableListings() } returns Result.success(TestData.mockListings)
+        coEvery { mockListingRepository.getAvailableListings(latitude, longitude) } returns Result.success(TestData.mockListings)
         coEvery { mockWasteClaimRepository.getWasteClaims() } returns Result.success(emptyList())
 
         viewModel.claimListing(listingId)

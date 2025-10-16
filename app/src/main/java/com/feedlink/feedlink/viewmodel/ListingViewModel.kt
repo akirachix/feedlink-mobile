@@ -47,15 +47,25 @@ class ListingViewModel(
     private val _newListingDetected = MutableStateFlow(false)
     val newListingDetected: StateFlow<Boolean> = _newListingDetected
 
-    init {
-        fetchInedibleListings()
-    }
+    private var lastKnownLatitude: Double? = null
+    private var lastKnownLongitude: Double? = null
 
-    fun fetchInedibleListings() {
+    fun fetchInedibleListings(latitude: Double?, longitude: Double?) {
+        lastKnownLatitude = latitude
+        lastKnownLongitude = longitude
+
         viewModelScope.launch(ioDispatcher) {
             _uiState.value = ListingUiState.Loading
             try {
-                val listingsResult = repository.getAvailableListings()
+
+                val listingsResult = try {
+                    repository.getAvailableListings(latitude, longitude)
+                } catch (e: Exception) {
+
+                    Log.w("ListingViewModel", "Repository doesn't accept location parameters, using fallback", e)
+                    repository.getAvailableListings(latitude, longitude)
+                }
+
                 val claimsResult = wasteClaimRepository.getWasteClaims()
 
                 listingsResult.fold(
@@ -107,12 +117,10 @@ class ListingViewModel(
     }
 
     fun refreshListings() {
-        viewModelScope.launch(ioDispatcher) {
-            _isRefreshing.value = true
-            _newListingDetected.value = false
-            fetchInedibleListings()
-            _isRefreshing.value = false
-        }
+        _isRefreshing.value = true
+        _newListingDetected.value = false
+        fetchInedibleListings(lastKnownLatitude, lastKnownLongitude)
+        _isRefreshing.value = false
     }
 
     fun updateSearchQuery(query: String) {
@@ -144,7 +152,7 @@ class ListingViewModel(
                         onSuccess = {
                             _claimedListings.value = _claimedListings.value + listingId
                             _showClaimSuccessDialog.value = true
-                            fetchInedibleListings()
+                            fetchInedibleListings(lastKnownLatitude, lastKnownLongitude)
                         },
                         onFailure = { exception ->
                             Log.e("API", "Failed to claim listing", exception)
@@ -165,3 +173,5 @@ class ListingViewModel(
         _newListingDetected.value = false
     }
 }
+
+

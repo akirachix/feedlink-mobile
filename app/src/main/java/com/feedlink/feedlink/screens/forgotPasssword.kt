@@ -13,8 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -99,10 +101,14 @@ fun ForgotPasswordScreen(
                         Text(
                             "Enter email",
                             fontStyle = FontStyle.Italic,
-                            color = Green.copy(alpha = 0.7f)
+                            color = Gray
                         )
                     },
                     singleLine = true,
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     isError = email.isNotBlank() && !Patterns.EMAIL_ADDRESS.matcher(email)
                         .matches(),

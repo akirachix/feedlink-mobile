@@ -4,7 +4,7 @@ import com.feedlink.feedlink.api.ApiInterface
 import com.feedlink.feedlink.model.Listing
 
 class ListingRepository(private val api: ApiInterface) {
-    suspend fun getAvailableListings(): Result<List<Listing>> {
+    suspend fun getAvailableListings(latitude: Double?, longitude: Double?): Result<List<Listing>> {
         return try {
             val response = api.fetchListings()
             if (response.isSuccessful) {
