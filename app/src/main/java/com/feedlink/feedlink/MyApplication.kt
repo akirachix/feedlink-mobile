@@ -1,6 +1,7 @@
 package com.feedlink.feedlink
 
 import android.app.Application
+import com.feedlink.feedlink.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import com.feedlink.feedlink.di.networkModule
@@ -15,7 +16,8 @@ class MyApplication : Application() {
             modules(
                 networkModule,
                 repositoryModule,
-                viewModelModule
+                viewModelModule,
+                appModule
             )
         }
     }

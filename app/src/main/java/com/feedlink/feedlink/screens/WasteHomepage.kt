@@ -45,6 +45,8 @@ import com.feedlink.feedlink.model.Listing
 import com.feedlink.feedlink.utils.NotificationManager
 import com.feedlink.feedlink.viewmodel.ListingUiState
 import com.feedlink.feedlink.viewmodel.ListingViewModel
+import com.feedlink.feedlink.location.LocationManager
+import com.feedlink.feedlink.location.RequestLocationPermission
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -69,9 +71,11 @@ fun RecyclerHome(
     var selectedListing by remember { mutableStateOf<Listing?>(null) }
 
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchInedibleListings()
-    }
+    // Location state variables
+    val locationManager = remember { LocationManager(context) }
+    var hasLocationPermission by remember { mutableStateOf(locationManager.hasLocationPermission()) }
+    var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    var locationPermissionRequested by remember { mutableStateOf(false) }
 
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -119,6 +123,27 @@ fun RecyclerHome(
     }
 
 
+    // Add location permission request
+    RequestLocationPermission(
+        onPermissionResult = { location ->
+            userLocation = location
+            hasLocationPermission = location != null
+        },
+        onPermissionRequestReady = { launchPermissionRequest ->
+            if (!hasLocationPermission && !locationPermissionRequested) {
+                locationPermissionRequested = true
+                launchPermissionRequest()
+            }
+        }
+    )
+
+
+    // Trigger the fetch when the user's location is available
+    LaunchedEffect(userLocation) {
+        viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
+    }
+
+
     val filteredListings = when (val currentState = uiState) {
         is ListingUiState.Success -> {
             currentState.listings.filter { listing ->
@@ -133,7 +158,7 @@ fun RecyclerHome(
         AlertDialog(
             onDismissRequest = { viewModel.dismissClaimSuccessDialog() },
             title = { Text("Claim Successful") },
-            text = { Text("You have successfully claimed this waste item. Please check your email for the pickup PIN.") },
+            text = { Text("You have successfully claimed this waste item.") },
             confirmButton = {
                 Button(onClick = { viewModel.dismissClaimSuccessDialog() }) {
                     Text("OK")
@@ -162,7 +187,7 @@ fun RecyclerHome(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Available Inedible Waste",
+                            text = "Welcome Back!",
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
                             color = Color.Black
@@ -170,13 +195,16 @@ fun RecyclerHome(
                     },
                     actions = {
                         IconButton(
-                            onClick = { viewModel.refreshListings() },
+                            onClick = {
+                                // On refresh, we re-fetch with the last known location
+                                viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
+                            },
                             enabled = !isRefreshing
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
                                 contentDescription = "Refresh",
-                                tint = if (isRefreshing) Color.Gray else Color(0xFF4CAF50)
+                                tint = if (isRefreshing) Color.Gray else Color(0xFF234B06)
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
@@ -190,7 +218,7 @@ fun RecyclerHome(
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Profile",
-                                tint = Color.Green,
+                                tint = Color(0xFF2E4E1E),
                                 modifier = Modifier
                                     .size(24.dp)
                                     .align(Alignment.Center)
@@ -218,8 +246,8 @@ fun RecyclerHome(
                     colors = TextFieldDefaults.colors(
                         unfocusedContainerColor = Color.White,
                         focusedContainerColor = Color.White,
-                        unfocusedIndicatorColor = Color(0xFF4CAF50),
-                        focusedIndicatorColor = Color(0xFF4CAF50),
+                        unfocusedIndicatorColor = Color(0xFF234B06),
+                        focusedIndicatorColor = Color(0xFF234B06),
                         unfocusedLeadingIconColor = Color(0xFF4CAF50),
                         focusedLeadingIconColor = Color(0xFF4CAF50)
                     ),
@@ -228,6 +256,21 @@ fun RecyclerHome(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = {})
                 )
+                if (userLocation != null) {
+                    Text(
+                        text = "Showing items within a 5km radius",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF234B06)
+                    )
+                } else {
+                    Text(
+                        text = "Location access needed to show nearby items",
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                }
             }
         }
     ) { padding ->
@@ -265,7 +308,7 @@ fun RecyclerHome(
                                     .fillMaxWidth()
                                     .align(Alignment.TopCenter)
                                     .padding(top = 8.dp),
-                                color = Color(0xFF4CAF50)
+                                color = Color(0xFF234B06)
                             )
                         }
                     }
@@ -280,19 +323,26 @@ fun RecyclerHome(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
+                                val emptyMessage = when {
+                                    userLocation == null -> "Please enable location to see nearby items."
+                                    else -> "No available inedible items within a 5km radius."
+                                }
                                 Text(
-                                    text = if (searchQuery.isEmpty()) "No available inedible waste items" else "No matching inedible items found",
+                                    text = if (searchQuery.isEmpty()) emptyMessage else "No matching inedible items found nearby",
                                     fontSize = 16.sp,
                                     color = Color.Gray
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Check back later for new waste items",
+                                    text = "Check back later or try refreshing",
                                     fontSize = 14.sp,
                                     color = Color.Gray
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Button(onClick = { viewModel.refreshListings() }) {
+                                Button(onClick = {
+                                    // On refresh, we re-fetch with the last known location
+                                    viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
+                                }) {
                                     Text("Refresh")
                                 }
                             }
@@ -320,7 +370,7 @@ fun RecyclerHome(
                                     .fillMaxWidth()
                                     .align(Alignment.TopCenter)
                                     .padding(top = 8.dp),
-                                color = Color(0xFF4CAF50)
+                                color = Color(0xFF234B06)
                             )
                         }
                     }
@@ -333,7 +383,10 @@ fun RecyclerHome(
                     ) {
                         Text("Failed to load items: ${currentState.message}")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.refreshListings() }) { Text("Retry") }
+                        Button(onClick = {
+                            // On retry, we re-fetch with the last known location
+                            viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
+                        }) { Text("Retry") }
                     }
                 }
             }
@@ -376,7 +429,7 @@ fun ListingItem(
             Text(
                 text = "Type: ${listing.productType?.replaceFirstChar { it.uppercase() } ?: "Unknown"}",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF4CAF50),
+                color = Color(0xFF234B06),
                 fontSize = 12.sp,
                 maxLines = 1
             )
@@ -400,7 +453,7 @@ fun ListingItem(
                     .fillMaxWidth()
                     .height(40.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isClaimed) Color.Gray else Color(0xFF4CAF50),
+                    containerColor = if (isClaimed) Color.Gray else Color(0xFF234B06),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(8.dp),
@@ -452,7 +505,7 @@ fun ListingDetailsPopup(
                         text = "Item Details",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
-                        color = Color(0xFF4CAF50)
+                        color = Color(0xFF234B06)
                     )
                     IconButton(onClick = onDismiss) {
                         Icon(
@@ -488,7 +541,7 @@ fun ListingDetailsPopup(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isClaimed) Color.Gray else Color(0xFF4CAF50),
+                        containerColor = if (isClaimed) Color.Gray else Color(0xFF234B06),
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(8.dp),
@@ -558,4 +611,6 @@ private fun formatDateTime(dateString: String): String {
         dateString
     }
 }
+
+
 

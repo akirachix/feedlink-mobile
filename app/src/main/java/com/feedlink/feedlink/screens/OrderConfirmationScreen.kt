@@ -6,27 +6,37 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.feedlink.feedlink.R
-import com.feedlink.feedlink.ui.theme.FeedlinkTheme
+import com.feedlink.feedlink.viewmodel.OrderUiState
+import com.feedlink.feedlink.viewmodel.OrderViewModel
+import org.koin.androidx.compose.koinViewModel
 
 val DarkGreen = Color(0xFF0A5825)
 
 @Composable
 fun OrderConfirmedScreen(
-    navController: NavController
+    navController: NavController,
+    orderId: Int
 ) {
+    val viewModel: OrderViewModel = koinViewModel()
+
+    LaunchedEffect(key1 = orderId) {
+        viewModel.fetchOrderDetails(orderId)
+    }
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -39,7 +49,6 @@ fun OrderConfirmedScreen(
                 .aspectRatio(1f),
             contentAlignment = Alignment.TopCenter
         ) {
-
             Card(
                 modifier = Modifier
                     .fillMaxSize()
@@ -51,7 +60,7 @@ fun OrderConfirmedScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 80.dp),
+                        .padding(top = 80.dp, start = 16.dp, end = 16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
@@ -61,31 +70,54 @@ fun OrderConfirmedScreen(
                         fontWeight = FontWeight.SemiBold
                     )
 
-                    Spacer(Modifier.height(50.dp))
+                    Spacer(Modifier.height(16.dp))
 
-                    Row(
+                    when (val state = uiState) {
+                        is OrderUiState.Loading -> {
+                            CircularProgressIndicator(color = Color.White)
+                        }
+                        is OrderUiState.SuccessSingle -> {
+                            val order = state.order
+                            Text(
+                                text = "Your pickup PIN is:",
+                                color = Color.White,
+                                fontSize = 18.sp
+                            )
+                            Text(
+                                text = order.pin ?: "N/A",
+                                color = Color.White,
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                        is OrderUiState.Error -> {
+                            Text(
+                                text = state.message,
+                                color = Color.Red
+                            )
+                        }
+                        else -> {
+                            Text("Fetching details...", color = Color.White)
+                        }
+                    }
+
+
+                    Spacer(Modifier.weight(1f))
+                    OutlinedButton(
+                        onClick = {
+                            navController.navigate("home") { popUpTo(0) }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
+                            .height(50.dp)
+                            .padding(horizontal = 24.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, Color.White),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                     ) {
-                        OutlinedButton(
-                            onClick = {
-                                navController.navigate("home") { popUpTo(0) }
-                            },
-                            modifier = Modifier
-                                .height(58.dp)
-                                .weight(1f)
-                                .padding(horizontal = 40.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, Color.White),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                        ) {
-                            Text("Home", fontWeight = FontWeight.Bold)
-                        }
-
+                        Text("Go to Home", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
+                    Spacer(Modifier.height(24.dp))
                 }
             }
 
@@ -100,12 +132,3 @@ fun OrderConfirmedScreen(
         }
     }
 }
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun OrderConfirmedScreenPreview() {
-    FeedlinkTheme {
-        OrderConfirmedScreen(navController = rememberNavController())
-    }
-}
-

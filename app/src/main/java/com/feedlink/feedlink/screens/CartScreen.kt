@@ -1,6 +1,4 @@
-
 package com.feedlink.feedlink.screens
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -27,88 +25,116 @@ import coil.compose.rememberAsyncImagePainter
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.model.ListingItem
 import com.feedlink.feedlink.ui.theme.*
-import com.feedlink.feedlink.ui.theme.FeedlinkTheme
-import com.feedlink.feedlink.viewmodel.CartViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import com.feedlink.feedlink.viewmodel.CartViewModel
+import com.feedlink.feedlink.viewmodel.CheckoutUiState
 
 @Composable
 fun CartScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToOrders: () -> Unit,
     onNavigateToNotifications: () -> Unit,
-    onProceedToCheckout: () -> Unit,
+    onNavigateToPayment: (orderId: Int, amount: Int) -> Unit,
     cartViewModel: CartViewModel = viewModel()
 ) {
     val cartItems = cartViewModel.cartItems
     val totalItems = cartViewModel.totalItems
     val totalPrice = cartViewModel.totalPrice
 
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                selected = "cart",
-                onHomeClick = onNavigateToHome,
-                onCartClick = {},
-                onOrdersClick = onNavigateToOrders,
-                onNotificationsClick = onNavigateToNotifications
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.topcurve),
-                contentDescription = "Top Curve",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(228.dp)
-                    .align(Alignment.TopCenter)
-            )
+    val checkoutState by cartViewModel.checkoutState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Your Cart",
-                    color = Color(0xFFFF8000),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 30.sp
+    LaunchedEffect(checkoutState) {
+        when (val state = checkoutState) {
+            is CheckoutUiState.NavigateToPayment -> {
+                onNavigateToPayment(state.orderId, state.amount)
+                cartViewModel.checkoutStateConsumed()
+            }
+            is CheckoutUiState.Error -> {
+                snackbarHostState.showSnackbar(
+                    message = state.message,
+                    duration = SnackbarDuration.Short
                 )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    Icons.Default.ShoppingCart,
-                    contentDescription = null,
-                    tint = Color(0xFFFF8000),
-                    modifier = Modifier.size(30.dp)
+                cartViewModel.checkoutStateConsumed()
+            }
+            else -> {  }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            bottomBar = {
+                BottomNavigationBar(
+                    selected = "cart",
+                    onHomeClick = onNavigateToHome,
+                    onCartClick = {},
+                    onOrdersClick = onNavigateToOrders,
+                    onNotificationsClick = onNavigateToNotifications
                 )
             }
-
-            Column(
+        ) { paddingValues ->
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 220.dp)
+                    .padding(paddingValues)
             ) {
-                CartContent(
-                    cartItems = cartItems,
-                    totalItems = totalItems,
-                    totalPrice = totalPrice,
-                    onQuantityChange = { itemId, newQty ->
-                        cartViewModel.onQuantityChange(itemId, newQty)
-                    },
-                    onRemoveItem = { cartViewModel.onRemoveItem(it) },
-                    onContinueShopping = onNavigateToHome,
-                    onProceedToCheckout = onProceedToCheckout
+                Image(
+                    painter = painterResource(id = R.drawable.topcurve),
+                    contentDescription = "Top Curve",
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(228.dp)
+                        .align(Alignment.TopCenter)
                 )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Your Cart",
+                        color = Orange,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 30.sp
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        tint = Orange,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 220.dp)
+                ) {
+                    CartContent(
+                        cartItems = cartItems,
+                        totalItems = totalItems,
+                        totalPrice = totalPrice,
+                        onQuantityChange = cartViewModel::onQuantityChange,
+                        onRemoveItem = cartViewModel::onRemoveItem,
+                        onContinueShopping = onNavigateToHome,
+                        onProceedToCheckout = { cartViewModel.initiateCheckout() },
+                        isCheckoutLoading = checkoutState is CheckoutUiState.Loading
+                    )
+                }
             }
+        }
+
+        if (checkoutState is CheckoutUiState.Loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = Green
+            )
         }
     }
 }
@@ -122,7 +148,8 @@ fun CartContent(
     onQuantityChange: (Int, Int) -> Unit,
     onRemoveItem: (Int) -> Unit,
     onContinueShopping: () -> Unit,
-    onProceedToCheckout: () -> Unit
+    onProceedToCheckout: () -> Unit,
+    isCheckoutLoading: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -153,9 +180,7 @@ fun CartContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Items", fontWeight = FontWeight.Normal, fontSize = 16.sp, color = Color.Gray, style = MaterialTheme.typography.labelSmall,
-
-                )
+            Text("Items", fontWeight = FontWeight.Normal, fontSize = 16.sp, color = Color.Gray, style = MaterialTheme.typography.labelSmall)
             Text("$totalItems", fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
         Spacer(Modifier.height(8.dp))
@@ -179,6 +204,7 @@ fun CartContent(
             Text("Continue Shopping", color = Green, fontWeight = FontWeight.Bold)
         }
         Spacer(Modifier.height(12.dp))
+
         Button(
             onClick = onProceedToCheckout,
             colors = ButtonDefaults.buttonColors(
@@ -188,9 +214,13 @@ fun CartContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            enabled = cartItems.isNotEmpty()
+            enabled = cartItems.isNotEmpty() && !isCheckoutLoading
         ) {
-            Text("Proceed to checkout", fontWeight = FontWeight.Bold)
+            if (isCheckoutLoading) {
+                Text("Processing...", fontWeight = FontWeight.Bold)
+            } else {
+                Text("Proceed to checkout", fontWeight = FontWeight.Bold)
+            }
         }
         Spacer(Modifier.height(16.dp))
     }
@@ -301,7 +331,8 @@ fun CartScreenPreview() {
             onNavigateToHome = {},
             onNavigateToOrders = {},
             onNavigateToNotifications = {},
-            onProceedToCheckout = {}
+            onNavigateToPayment = { _, _ -> }
         )
     }
 }
+

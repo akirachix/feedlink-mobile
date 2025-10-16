@@ -49,6 +49,9 @@ data class Order(
     @SerializedName("order_id")
     val orderId: Int,
 
+    @SerializedName("user")
+    val user: Int,
+
     @SerializedName("order_date")
     val orderDate: String?,
 
@@ -57,4 +60,17 @@ data class Order(
 
     @SerializedName("pin")
     val pin: String?
+)
+
+data class OrderCreationRequest(
+    @SerializedName("user")
+    val userId: Int,
+
+
+    @SerializedName("order_status")
+    val orderStatus: String,
+
+
+    @SerializedName("payment_status")
+    val paymentStatus: String
 )

@@ -18,8 +18,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -29,14 +32,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.feedlink.screens.WelcomeScreen
+import com.feedlink.feedlink.R
 import com.feedlink.feedlink.auth.TokenManager
 import com.feedlink.feedlink.viewmodel.CartViewModel
 import com.feedlink.feedlink.viewmodel.TimerViewModel
 import com.feedlink.feedlink.viewmodel.WasteClaimViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-
-
 
 
 sealed class Screen(val route: String) {
@@ -50,21 +52,22 @@ sealed class Screen(val route: String) {
     object SignUp : Screen("sign_up/{userRole}") {
         fun createRoute(role: String) = "sign_up/$role"
     }
+
     object ForgotPassword : Screen("forgot_password")
     object Verification : Screen("verification/{email}") {
         fun createRoute(email: String) = "verification/$email"
     }
+
     object ResetPassword : Screen("reset_password/{email}/{otp}") {
         fun createRoute(email: String, otp: String) = "reset_password/$email/$otp"
     }
-
-
 
 
     object Home : Screen("home")
     object ProductDetail : Screen("product_detail/{listingId}") {
         fun createRoute(id: Int) = "product_detail/$id"
     }
+
     object Cart : Screen("cart")
     object Orders : Screen("orders")
     object BuyerNotifications : Screen("buyer_notifications")
@@ -80,12 +83,11 @@ sealed class Screen(val route: String) {
     object PaymentMethod : Screen("payment_method/{orderId}/{totalAmount}") {
         fun createRoute(orderId: Int, totalAmount: Int) = "payment_method/$orderId/$totalAmount"
     }
+
     object OrderConfirmed : Screen("order_confirmed_screen/{orderId}") {
         fun createRoute(orderId: Int) = "order_confirmed_screen/$orderId"
     }
 }
-
-
 
 
 @Composable
@@ -94,8 +96,6 @@ fun FeedLinkNavHost(
     startDestination: String = Screen.Splash.route
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
-
-
 
 
         composable(Screen.Splash.route) {
@@ -154,11 +154,17 @@ fun FeedLinkNavHost(
             )
         }
 
-        composable(Screen.OrderConfirmed.route) {
-            OrderConfirmedScreen(navController = navController)
+        composable(
+            route = Screen.OrderConfirmed.route,
+            arguments = listOf(navArgument("orderId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getInt("orderId") ?: 0
+
+            OrderConfirmedScreen(
+                navController = navController,
+                orderId = orderId
+            )
         }
-
-
 
 
         composable(Screen.AuthChoice.route) {
@@ -208,20 +214,9 @@ fun FeedLinkNavHost(
             val passedRole = backStackEntry.arguments?.getString("userRole") ?: "buyer"
             SignUpScreen(
                 userRole = passedRole,
-                onNavigateToHome = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Splash.route) { inclusive = true }
-                    }
-                },
-                onNavigateToRecyclerHome = {
-                    navController.navigate(Screen.RecyclerHome.route) {
-                        popUpTo(Screen.Splash.route) { inclusive = true }
-                    }
-                },
                 onSignInClick = { navController.navigate(Screen.SignIn.route) }
             )
         }
-
 
 
 
@@ -305,22 +300,22 @@ fun FeedLinkNavHost(
         }
 
 
-
-
         composable(Screen.Cart.route) {
-            val cartViewModel: CartViewModel = viewModel()
-            val totalPrice = cartViewModel.totalPrice
+            val cartViewModel: CartViewModel = koinViewModel()
+
             CartScreen(
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToOrders = { navController.navigate(Screen.Orders.route) },
                 onNavigateToNotifications = { navController.navigate(Screen.BuyerNotifications.route) },
-                onProceedToCheckout = {
-                    val orderId = 48
-                    val totalAmount = totalPrice
+
+                onNavigateToPayment = { orderId, totalAmount ->
                     navController.navigate(Screen.PaymentMethod.createRoute(orderId, totalAmount))
-                }
+                },
+
+                cartViewModel = cartViewModel
             )
         }
+
 
 
 
@@ -382,7 +377,7 @@ fun FeedLinkNavHost(
                         popUpTo(Screen.Splash.route) { inclusive = true }
                         launchSingleTop = true
                     }
-                },onNavigateBack = {
+                }, onNavigateBack = {
                     navController.popBackStack()
                 }
             )
@@ -439,8 +434,6 @@ fun FeedLinkNavHost(
             if (claimId == -1) return@composable
 
 
-
-
             val viewModel: TimerViewModel = koinViewModel(
                 key = "timer_vm_$claimId",
                 parameters = { parametersOf(claimId) }
@@ -461,8 +454,6 @@ fun FeedLinkNavHost(
 fun BuyerNotificationsScreen() {
     TODO("Not yet implemented")
 }
-
-
 
 
 @Composable
@@ -514,11 +505,13 @@ fun RecyclerAppNavGraph(navController: NavController) {
         }
     }
 }
+
 @Composable
 fun CurvedBottomNavigationBar(
     navController: NavController,
     currentRoute: String?
 ) {
+    val Nunito = FontFamily(Font(R.font.nunito, FontWeight.Normal))
     Surface(
         color = Color.White,
         modifier = Modifier
@@ -559,7 +552,9 @@ fun CurvedBottomNavigationBar(
                                 Screen.RecyclerNotifications -> "Notifications"
                                 else -> "Unknown"
                             },
-                            color = if (isSelected) Color(0xFFFF8614) else Color(0xFF234B06)
+                            color = if (isSelected) Color(0xFFFF8614) else Color(0xFF234B06),
+                            fontFamily = Nunito,
+                            fontSize = 10.sp
                         )
                     },
                     selected = isSelected,
@@ -574,7 +569,3 @@ fun CurvedBottomNavigationBar(
         }
     }
 }
-
-
-
-
