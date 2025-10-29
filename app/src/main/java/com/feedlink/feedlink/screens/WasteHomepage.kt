@@ -71,7 +71,6 @@ fun RecyclerHome(
     var selectedListing by remember { mutableStateOf<Listing?>(null) }
 
 
-    // Location state variables
     val locationManager = remember { LocationManager(context) }
     var hasLocationPermission by remember { mutableStateOf(locationManager.hasLocationPermission()) }
     var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
@@ -123,7 +122,6 @@ fun RecyclerHome(
     }
 
 
-    // Add location permission request
     RequestLocationPermission(
         onPermissionResult = { location ->
             userLocation = location
@@ -138,7 +136,6 @@ fun RecyclerHome(
     )
 
 
-    // Trigger the fetch when the user's location is available
     LaunchedEffect(userLocation) {
         viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
     }
@@ -196,7 +193,6 @@ fun RecyclerHome(
                     actions = {
                         IconButton(
                             onClick = {
-                                // On refresh, we re-fetch with the last known location
                                 viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
                             },
                             enabled = !isRefreshing
@@ -340,7 +336,6 @@ fun RecyclerHome(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Button(onClick = {
-                                    // On refresh, we re-fetch with the last known location
                                     viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
                                 }) {
                                     Text("Refresh")
@@ -384,7 +379,6 @@ fun RecyclerHome(
                         Text("Failed to load items: ${currentState.message}")
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = {
-                            // On retry, we re-fetch with the last known location
                             viewModel.fetchInedibleListings(userLocation?.first, userLocation?.second)
                         }) { Text("Retry") }
                     }
@@ -529,9 +523,6 @@ fun ListingDetailsPopup(
                 DetailRow(label = "Category", value = listing.category?.replaceFirstChar { it.uppercase() })
                 DetailRow(label = "Description", value = listing.description)
                 DetailRow(label = "Quantity", value = "${listing.quantity ?: "0"} ${listing.unit ?: "units"}")
-                DetailRow(label = "Original Price", value = listing.originalPrice.toString())
-                DetailRow(label = "Discounted Price", value = listing.discountedPrice.toString())
-                listing.expiryDate?.let { DetailRow(label = "Expiry Date", value = formatDateTime(it)) }
                 DetailRow(label = "Listed On", value = formatDateTime(listing.createdAt))
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
