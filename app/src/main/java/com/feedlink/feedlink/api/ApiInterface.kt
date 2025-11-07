@@ -112,13 +112,16 @@ interface ApiInterface {
     @GET("orders/")
     suspend fun getAllOrders(): List<Order>
 
-
     @POST("orders/")
     suspend fun createOrder(@Body orderRequest: OrderCreationRequest): Response<Order>
 
     @GET("orders/{order_id}/")
     suspend fun getOrderById(@Path("order_id") orderId: Int): Response<Order>
 
-
+    @PATCH("orders/{orderId}/")
+    suspend fun updateOrderStatus(
+        @Path("orderId") orderId: Int,
+        @Body request: UpdateOrderStatusRequest
+    ): Response<Order>
 
 }

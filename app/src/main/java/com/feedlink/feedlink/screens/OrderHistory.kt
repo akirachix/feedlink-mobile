@@ -1,8 +1,9 @@
-package com.feedlink.feedlink.screens
-
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,8 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,14 +23,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.feedlink.feedlink.R
 import com.feedlink.feedlink.network.Order
+import com.feedlink.feedlink.screens.BottomNavigationBar
 import com.feedlink.feedlink.viewmodel.OrderUiState
 import com.feedlink.feedlink.viewmodel.OrderViewModel
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderHistory(
@@ -43,6 +45,9 @@ fun OrderHistory(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
+
+    var selectedOrder by remember { mutableStateOf<Order?>(null) }
+    var showDetailsDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchOrdersForCurrentUser()
@@ -68,7 +73,7 @@ fun OrderHistory(
             BottomNavigationBar(
                 selected = "orders",
                 onHomeClick = onNavigateToHome,
-                onCartClick = {},
+                onCartClick = onNavigateToHome,
                 onOrdersClick = onNavigateToOrders,
                 onNotificationsClick = onNavigateToNotifications
             )
@@ -174,7 +179,13 @@ fun OrderHistory(
                                             )
                                         }
                                         items(orders) { order ->
-                                            OrderHistoryItem(order = order)
+                                            OrderHistoryItem(
+                                                order = order,
+                                                onItemClick = {
+                                                    selectedOrder = order
+                                                    showDetailsDialog = true
+                                                }
+                                            )
                                         }
                                         item {
                                             Spacer(modifier = Modifier.height(16.dp))
@@ -208,14 +219,30 @@ fun OrderHistory(
             }
         }
     )
+
+    if (showDetailsDialog && selectedOrder != null) {
+        OrderDetailsDialog(
+            order = selectedOrder!!,
+            onDismiss = { showDetailsDialog = false },
+            onMarkAsPicked = {
+                viewModel.updateOrderStatus(selectedOrder!!.orderId, "picked")
+                showDetailsDialog = false
+            }
+        )
+    }
 }
 
 @Composable
-fun OrderHistoryItem(order: Order, modifier: Modifier = Modifier) {
+fun OrderHistoryItem(
+    order: Order,
+    onItemClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable { onItemClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -260,6 +287,89 @@ fun OrderHistoryItem(order: Order, modifier: Modifier = Modifier) {
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun OrderDetailsDialog(
+    order: Order,
+    onDismiss: () -> Unit,
+    onMarkAsPicked: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Order Details",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF234B06)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(text = "Order ID: ${order.orderId}", fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Status: ${order.orderStatus?.replaceFirstChar { it.uppercase() } ?: "Unknown"}",
+                    fontSize = 16.sp,
+                    color = when (order.orderStatus?.lowercase()) {
+                        "picked", "delivered" -> Color(0xFF4CAF50)
+                        "pending" -> Color(0xFFFFC107)
+                        else -> Color.Gray
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(text = "Order Date: ${formatDateTime(order.orderDate)}", fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(text = "PIN: ${order.pin ?: "N/A"}", fontSize = 16.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                if (order.orderStatus?.lowercase() == "pending") {
+                    Button(
+                        onClick = onMarkAsPicked,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4CAF50),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Mark as Picked")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF234B06),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Close")
+                }
             }
         }
     }
