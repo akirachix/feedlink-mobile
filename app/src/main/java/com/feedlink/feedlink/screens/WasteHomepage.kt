@@ -179,6 +179,7 @@ fun RecyclerHome(
 
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
             Column {
                 TopAppBar(
@@ -602,6 +603,3 @@ private fun formatDateTime(dateString: String): String {
         dateString
     }
 }
-
-
-

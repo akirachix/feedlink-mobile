@@ -106,7 +106,10 @@ fun WasteCollection(
         }
 
 
-        Scaffold(modifier = Modifier.padding(top = 200.dp)) { paddingValues ->
+        Scaffold(
+            modifier = Modifier.padding(top = 200.dp),
+            containerColor = Color.Transparent
+        ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -230,56 +233,49 @@ fun WasteClaimItem(
     onClockClick: () -> Unit = {},
     onItemClick: () -> Unit = {}
 ) {
-    Card(
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onItemClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Waste ID: ${claim.wasteId ?: "Unknown"}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.Black
+        Column {
+            Text(
+                text = "Waste ID: ${claim.wasteId ?: "Unknown"}",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color.Black
+            )
+            Text(
+                text = "Status: ${claim.claimStatus}",
+                fontSize = 14.sp,
+                color = if (claim.claimStatus == "pending") Color(0xFFFF9800) else Color(0xFF4CAF50)
+            )
+            Text(
+                text = "Claimed: ${DateUtils.formatClaimTime(claim.claimTime)}",
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = DateUtils.formatDuration(claim.claimTime),
+                fontSize = 14.sp,
+                color = Color.Black,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            IconButton(
+                onClick = onClockClick,
+                enabled = claim.wasteId != null
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccessTime,
+                    contentDescription = "Timer",
+                    tint = if (claim.wasteId != null) Color(0xFF234B06) else Color.Gray
                 )
-                Text(
-                    text = "Status: ${claim.claimStatus}",
-                    fontSize = 14.sp,
-                    color = if (claim.claimStatus == "pending") Color(0xFFFF9800) else Color(0xFF4CAF50)
-                )
-                Text(
-                    text = "Claimed: ${DateUtils.formatClaimTime(claim.claimTime)}",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = DateUtils.formatDuration(claim.claimTime),
-                    fontSize = 14.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                IconButton(
-                    onClick = onClockClick,
-                    enabled = claim.wasteId != null
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = "Timer",
-                        tint = if (claim.wasteId != null) Color(0xFF234B06) else Color.Gray
-                    )
-                }
             }
         }
     }
@@ -462,4 +458,3 @@ fun SuccessDialog(
         }
     }
 }
-

@@ -1,5 +1,7 @@
 package com.feedlink.feedlink.di
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.feedlink.feedlink.api.ApiInterface
 import com.feedlink.feedlink.api.AuthInterceptor
 import com.feedlink.feedlink.auth.TokenManager
@@ -83,6 +85,7 @@ val appModule = module {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 val viewModelModule = module {
     viewModel { SignupViewModel(get()) }
     viewModel { SigninViewModel(get()) }
