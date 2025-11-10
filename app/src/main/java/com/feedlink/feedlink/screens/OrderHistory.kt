@@ -364,7 +364,7 @@ fun OrderDetailsDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50),
+                        containerColor = Color.Gray,
                         contentColor = Color.White
                     )
                 ) {

@@ -52,9 +52,10 @@ fun PaymentMethodScreen(
             }
 
             is PaymentUiState.OrderConfirmed -> {
-
-                navController.navigate(Screen.OrderConfirmed.route) {
-                    popUpTo(0)
+                navController.navigate(Screen.OrderConfirmed.createRoute(orderId)) {
+                    popUpTo(Screen.Home.route) {
+                        inclusive = false
+                    }
                 }
             }
 

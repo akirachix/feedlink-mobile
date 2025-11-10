@@ -1,5 +1,7 @@
 package com.feedlink.feedlink.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,6 +26,7 @@ import org.koin.androidx.compose.koinViewModel
 
 val DarkGreen = Color(0xFF0A5825)
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun OrderConfirmedScreen(
     navController: NavController,
